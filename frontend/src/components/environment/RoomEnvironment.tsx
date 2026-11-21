@@ -22,6 +22,7 @@ import {
   Layers,
 } from 'lucide-react';
 import { sounds } from '../../audio/soundSynth';
+import { themeManager } from '../../services/themeManager';
 
 interface RoomEnvironmentProps {
   customization: CatCustomization;
@@ -50,13 +51,25 @@ export const RoomEnvironment: React.FC<RoomEnvironmentProps> = ({
   currentRoom = 'living_room',
   onRoomChange,
 }) => {
-  const currentHour = new Date().getHours();
-  const timeOfDay =
-    currentHour >= 6 && currentHour < 16
-      ? 'day'
-      : currentHour >= 16 && currentHour < 19
-      ? 'sunset'
-      : 'night';
+  // Active Theme & Room Lighting Synchronization
+  const [isDarkMode, setIsDarkMode] = useState<boolean>(() => themeManager.isDark());
+  const [manualLighting, setManualLighting] = useState<'day' | 'night' | null>(null);
+
+  // Subscribe to global theme changes so light mode immediately illuminates room
+  useEffect(() => {
+    setIsDarkMode(themeManager.isDark());
+    const unsub = themeManager.subscribe((_settings, isDark) => {
+      setIsDarkMode(isDark);
+      setManualLighting(null); // Reset manual override whenever global theme changes
+    });
+    return unsub;
+  }, []);
+
+  // In Light Mode (!isDarkMode), room defaults strictly to daytime bright daylight;
+  // In Dark Mode (isDarkMode), room defaults to cozy night mode.
+  // User can also toggle via the header daylight badge anytime.
+  const isDay = manualLighting !== null ? manualLighting === 'day' : !isDarkMode;
+  const timeOfDay: 'day' | 'night' = isDay ? 'day' : 'night';
 
   // Room Waypoints (Pixels offset from center for each room)
   const roomWaypoints: Record<string, Record<string, { x: number; y: number }>> = {
@@ -341,27 +354,27 @@ export const RoomEnvironment: React.FC<RoomEnvironmentProps> = ({
             <span>{gender === 'male' ? '♂ JANTAN' : '♀ BETINA'}</span>
           </div>
 
-          {/* Daylight Mode */}
-          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-md border border-[#E7E2DA] dark:border-[#2D2A26] bg-[#FCFBF8] dark:bg-[#181615] text-[#5A5046] dark:text-[#B5ACA1]">
-            {timeOfDay === 'day' && (
+          {/* Daylight / Night Mode Toggle */}
+          <button
+            onClick={() => {
+              sounds.playClick();
+              setManualLighting(isDay ? 'night' : 'day');
+            }}
+            title="Klik untuk mengubah pencahayaan ruangan antara Siang dan Malam"
+            className="btn-press flex items-center gap-1.5 px-2.5 py-1 rounded-md border border-[#E7E2DA] dark:border-[#2D2A26] bg-[#FCFBF8] dark:bg-[#181615] hover:border-[var(--accent)] transition-colors cursor-pointer select-none"
+          >
+            {isDay ? (
               <>
                 <Sun className="w-3.5 h-3.5 text-[#B88728]" />
-                <span className="hidden sm:inline">DAYLIGHT</span>
+                <span className="hidden sm:inline font-mono text-[10px] font-semibold text-[#8F681A] dark:text-[#E5B558]">DAYLIGHT</span>
               </>
-            )}
-            {timeOfDay === 'sunset' && (
+            ) : (
               <>
-                <CloudSun className="w-3.5 h-3.5 text-[#C75D35]" />
-                <span className="hidden sm:inline">DUSK</span>
+                <Moon className="w-3.5 h-3.5 text-indigo-400" />
+                <span className="hidden sm:inline font-mono text-[10px] font-semibold text-indigo-500 dark:text-indigo-300">NIGHT</span>
               </>
             )}
-            {timeOfDay === 'night' && (
-              <>
-                <Moon className="w-3.5 h-3.5 text-[#7E756B]" />
-                <span className="hidden sm:inline">NIGHT</span>
-              </>
-            )}
-          </div>
+          </button>
         </div>
       </div>
 
@@ -375,8 +388,18 @@ export const RoomEnvironment: React.FC<RoomEnvironmentProps> = ({
           <div className="absolute inset-0 flex justify-between p-6 pointer-events-none">
             {/* Picture Window */}
             <div className="relative w-36 sm:w-44 h-44 sm:h-52 rounded-t-lg border border-[#D5CDC2] dark:border-[#38332E] bg-[#FAF8F5] dark:bg-[#1E1C1A] overflow-hidden">
-              <div className="w-full h-full bg-gradient-to-b from-[#CFE4EE] to-[#E9DFCE] relative flex items-center justify-center">
-                <div className="w-9 h-9 rounded-full bg-[#E5B558] opacity-80" />
+              <div className={`w-full h-full relative flex items-center justify-center transition-colors duration-300 ${
+                isDay
+                  ? 'bg-gradient-to-b from-[#CFE4EE] via-[#DCEBF5] to-[#E9DFCE]'
+                  : 'bg-gradient-to-b from-[#151D2A] via-[#1E2638] to-[#1C1E2B]'
+              }`}>
+                {isDay ? (
+                  <div className="w-9 h-9 rounded-full bg-[#E5B558] opacity-90 shadow-sm" />
+                ) : (
+                  <div className="w-7 h-7 rounded-full bg-[#EAE5D9] shadow-sm relative">
+                    <div className="absolute top-1 left-2 w-1 h-1 rounded-full bg-white opacity-80" />
+                  </div>
+                )}
                 <div className="absolute inset-0 border-r border-[#FAF8F5]/70 dark:border-white/20 left-1/2" />
                 <div className="absolute inset-0 border-b border-[#FAF8F5]/70 dark:border-white/20 top-1/2" />
               </div>
@@ -408,10 +431,25 @@ export const RoomEnvironment: React.FC<RoomEnvironmentProps> = ({
         {currentRoom === 'balcony' && (
           <div className="absolute inset-0 flex flex-col justify-between pointer-events-none">
             {/* Open Sky Panorama */}
-            <div className="w-full h-64 bg-gradient-to-b from-[#B6DCFE] via-[#D8ECFE] to-[#F1F8FE] dark:from-[#15233A] dark:via-[#1D2E49] dark:to-[#172233] relative overflow-hidden">
-              <div className="absolute top-8 right-16 w-14 h-14 rounded-full bg-[#FCE38A] opacity-90 blur-xs" />
-              <div className="absolute top-16 left-12 w-28 h-8 rounded-full bg-white/70 dark:bg-white/10 blur-xs" />
-              <div className="absolute top-24 right-48 w-36 h-9 rounded-full bg-white/60 dark:bg-white/10 blur-xs" />
+            <div className={`w-full h-64 relative overflow-hidden transition-colors duration-300 ${
+              isDay
+                ? 'bg-gradient-to-b from-[#99CEFF] via-[#CFE6FD] to-[#EBF5FE]'
+                : 'bg-gradient-to-b from-[#15233A] via-[#1D2E49] to-[#172233]'
+            }`}>
+              {isDay ? (
+                <>
+                  <div className="absolute top-8 right-16 w-14 h-14 rounded-full bg-[#FCE38A] opacity-95 blur-xs shadow-md" />
+                  <div className="absolute top-16 left-12 w-28 h-8 rounded-full bg-white/80 blur-xs" />
+                  <div className="absolute top-24 right-48 w-36 h-9 rounded-full bg-white/70 blur-xs" />
+                </>
+              ) : (
+                <>
+                  <div className="absolute top-8 right-16 w-12 h-12 rounded-full bg-[#EDE8DC] opacity-90 shadow-sm" />
+                  <div className="absolute top-14 left-16 w-1 h-1 rounded-full bg-white opacity-80" />
+                  <div className="absolute top-20 right-40 w-1.5 h-1.5 rounded-full bg-white opacity-70" />
+                  <div className="absolute top-24 left-36 w-1 h-1 rounded-full bg-white opacity-60" />
+                </>
+              )}
               {/* Balcony Railing Bars */}
               <div className="absolute bottom-0 left-0 right-0 h-16 border-t-2 border-[#A8B7C7] dark:border-[#384656] flex justify-around">
                 {Array.from({ length: 18 }).map((_, i) => (
@@ -425,19 +463,35 @@ export const RoomEnvironment: React.FC<RoomEnvironmentProps> = ({
         {/* ROOM 3: COZY BEDROOM */}
         {currentRoom === 'bedroom' && (
           <div className="absolute inset-0 flex justify-between p-6 pointer-events-none">
-            {/* Moonlit Arched Window */}
+            {/* Arched Window (Daylight / Moonlit) */}
             <div className="relative w-32 sm:w-40 h-48 sm:h-56 rounded-t-full border border-[#C5BDB2] dark:border-[#38332E] bg-[#FAF8F5] dark:bg-[#1E1C1A] overflow-hidden">
-              <div className="w-full h-full bg-gradient-to-b from-[#192233] via-[#2A3448] to-[#252836] relative flex items-center justify-center">
-                <div className="w-6 h-6 rounded-full bg-[#EAE5D9] shadow-sm" />
-                <div className="absolute top-4 left-6 w-1 h-1 rounded-full bg-white opacity-80" />
-                <div className="absolute top-12 right-6 w-1.5 h-1.5 rounded-full bg-white opacity-70" />
-                <div className="absolute bottom-16 left-8 w-1 h-1 rounded-full bg-white opacity-80" />
+              <div className={`w-full h-full relative flex items-center justify-center transition-colors duration-300 ${
+                isDay
+                  ? 'bg-gradient-to-b from-[#87CEEB] via-[#BFE3F7] to-[#E8F1F5]'
+                  : 'bg-gradient-to-b from-[#192233] via-[#2A3448] to-[#252836]'
+              }`}>
+                {isDay ? (
+                  <>
+                    <div className="w-8 h-8 rounded-full bg-[#FFD166] opacity-95 shadow-md" />
+                    <div className="absolute top-6 left-4 w-12 h-4 rounded-full bg-white/70 blur-2xs" />
+                    <div className="absolute bottom-16 right-4 w-14 h-5 rounded-full bg-white/60 blur-2xs" />
+                  </>
+                ) : (
+                  <>
+                    <div className="w-6 h-6 rounded-full bg-[#EAE5D9] shadow-sm" />
+                    <div className="absolute top-4 left-6 w-1 h-1 rounded-full bg-white opacity-80" />
+                    <div className="absolute top-12 right-6 w-1.5 h-1.5 rounded-full bg-white opacity-70" />
+                    <div className="absolute bottom-16 left-8 w-1 h-1 rounded-full bg-white opacity-80" />
+                  </>
+                )}
               </div>
             </div>
 
             {/* Bedroom Ambient Lamp Glow Effect */}
             {bedroomLampOn && (
-              <div className="absolute top-16 right-20 w-48 h-48 rounded-full bg-[#FFDF9E]/20 dark:bg-[#FFD77A]/10 blur-2xl pointer-events-none" />
+              <div className={`absolute top-16 right-20 w-48 h-48 rounded-full blur-2xl pointer-events-none ${
+                isDay ? 'bg-[#FFDF9E]/25' : 'bg-[#FFD77A]/15'
+              }`} />
             )}
 
             {/* Wall Dream Frame */}
@@ -456,7 +510,7 @@ export const RoomEnvironment: React.FC<RoomEnvironmentProps> = ({
         {currentRoom === 'kitchen' && (
           <div className="absolute inset-0 flex justify-between p-6 pointer-events-none">
             {/* Subway Tiles Pattern & Stainless Backsplash */}
-            <div className="absolute top-0 left-0 right-0 h-44 opacity-25 bg-[linear-gradient(90deg,transparent_48%,rgba(0,0,0,0.2)_50%,transparent_52%),linear-gradient(0deg,transparent_48%,rgba(0,0,0,0.2)_50%,transparent_52%)] bg-[length:40px_20px]" />
+            <div className="absolute top-0 left-0 right-0 h-44 opacity-25 bg-[linear-gradient(90deg,transparent_48%,rgba(0,0,0,0.12)_50%,transparent_52%),linear-gradient(0deg,transparent_48%,rgba(0,0,0,0.12)_50%,transparent_52%)] dark:bg-[linear-gradient(90deg,transparent_48%,rgba(255,255,255,0.08)_50%,transparent_52%),linear-gradient(0deg,transparent_48%,rgba(255,255,255,0.08)_50%,transparent_52%)] bg-[length:40px_20px]" />
             
             {/* Hanging Copper Pans */}
             <div className="relative w-48 h-2 bg-[#BDB2A6] dark:bg-[#3A332B] rounded-xs top-8 flex justify-around px-2">
@@ -465,14 +519,14 @@ export const RoomEnvironment: React.FC<RoomEnvironmentProps> = ({
               <div className="w-5 h-9 border-b-2 border-l-2 border-[#756A5E] rounded-b-full -top-1 relative" />
             </div>
 
-            {/* Pantry Chalkboard Menu */}
-            <div className="hidden sm:block p-2.5 bg-[#22201D] dark:bg-[#121110] border border-[#3D3833] rounded w-28 h-32 text-center font-mono">
-              <span className="text-[9px] text-[var(--accent)] font-semibold block border-b border-[#3D3833] pb-1">
+            {/* Pantry Menu Board */}
+            <div className="hidden sm:block p-2.5 bg-[#FAF6EE] dark:bg-[#141311] border border-[#D5CDC2] dark:border-[#3D3833] rounded w-28 h-32 text-center font-mono">
+              <span className="text-[9px] text-[var(--accent)] font-semibold block border-b border-[#D5CDC2] dark:border-[#3D3833] pb-1">
                 PANTRY MENU
               </span>
-              <span className="text-[8px] text-[#A89F91] block mt-2">1. Fresh Salmon</span>
-              <span className="text-[8px] text-[#A89F91] block mt-1">2. Cat Spring Water</span>
-              <span className="text-[8px] text-[#A89F91] block mt-1">3. Crunchy Kibble</span>
+              <span className="text-[8px] text-[#5A5046] dark:text-[#A89F91] block mt-2">1. Fresh Salmon</span>
+              <span className="text-[8px] text-[#5A5046] dark:text-[#A89F91] block mt-1">2. Cat Spring Water</span>
+              <span className="text-[8px] text-[#5A5046] dark:text-[#A89F91] block mt-1">3. Crunchy Kibble</span>
             </div>
           </div>
         )}
@@ -618,8 +672,8 @@ export const RoomEnvironment: React.FC<RoomEnvironmentProps> = ({
                   className="pointer-events-auto cursor-pointer group flex flex-col items-center btn-press"
                   title="Mangkok Pakan Kering (Klik untuk memberi makan)"
                 >
-                  <div className="w-14 sm:w-16 h-8 sm:h-9 rounded-[50%] bg-[#22201D] dark:bg-[#141311] border border-[#141311] dark:border-[#38332E] flex items-center justify-center transition-colors group-hover:border-[var(--accent)]">
-                    <span className="font-mono text-[9px] text-[#FAF8F5]">KIBBLE</span>
+                  <div className="w-14 sm:w-16 h-8 sm:h-9 rounded-[50%] bg-[#F5EFE6] dark:bg-[#141311] border border-[#C8BFB3] dark:border-[#38332E] flex items-center justify-center transition-colors group-hover:border-[var(--accent)]">
+                    <span className="font-mono text-[9px] text-[#5A5046] dark:text-[#FAF8F5]">KIBBLE</span>
                   </div>
                   <span className="font-mono text-[10px] text-[#756A5E] dark:text-[#B5ACA1] mt-1 uppercase tracking-wider">
                     BOWL

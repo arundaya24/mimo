@@ -284,7 +284,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                 </p>
               </div>
 
-              <div className="p-3 rounded bg-[#181614] dark:bg-[#0D0C0B] text-[#E7E2DA] dark:text-[#B5ACA1] font-mono text-[11px] leading-relaxed border border-[#2D2A26]">
+              <div className="p-3 rounded bg-[#F2ECE1] dark:bg-[#0D0C0B] text-[#3D3730] dark:text-[#B5ACA1] font-mono text-[11px] leading-relaxed border border-[#DDD3C4] dark:border-[#2D2A26]">
                 <code>
                   $hours = diffInMinutes / 60;<br />
                   $hunger += $hours * 3.5 * $mult;<br />

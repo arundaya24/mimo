@@ -320,7 +320,7 @@ export const PetDashboardPage: React.FC<PetDashboardPageProps> = ({
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -8 }}
             transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
-            className="bg-[#181614] dark:bg-[#201D1A] text-[#F8F6F1] px-4 py-2.5 rounded-lg border border-[#322F2B] dark:border-[#423C36] flex flex-wrap items-center justify-between gap-4 text-xs font-mono shadow-md"
+            className="bg-[#FCFBF8] dark:bg-[#201D1A] text-[#22201D] dark:text-[#F8F6F1] px-4 py-2.5 rounded-lg border border-[#E7E2DA] dark:border-[#423C36] flex flex-wrap items-center justify-between gap-4 text-xs font-mono shadow-sm"
           >
             <div className="flex items-center gap-2">
               <span className="w-1.5 h-1.5 rounded-full bg-[var(--accent)]" />
