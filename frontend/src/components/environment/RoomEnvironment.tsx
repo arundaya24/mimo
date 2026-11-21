@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { PetState, CatCustomization, CatStats, CatPersonality } from '../../types/pet';
 import { CatCharacter } from '../cat/CatCharacter';
-import { Sun, Moon, CloudSun, Home, Bed, Trees, CircleDot, Info, Sparkles, Utensils } from 'lucide-react';
+import { Sun, Moon, CloudSun, Home, Bed, Trees, CircleDot, Info, Sparkles, Utensils, Hand, Footprints } from 'lucide-react';
 import { sounds } from '../../audio/soundSynth';
 
 interface RoomEnvironmentProps {
@@ -35,26 +35,37 @@ export const RoomEnvironment: React.FC<RoomEnvironmentProps> = ({
   const currentHour = new Date().getHours();
   const timeOfDay = currentHour >= 6 && currentHour < 16 ? 'day' : currentHour >= 16 && currentHour < 19 ? 'sunset' : 'night';
 
-  const [currentWaypoint, setCurrentWaypoint] = useState<Waypoint>(isSleeping ? 'bed' : 'rug');
+  // Coordinate mappings (pixels offset from center)
+  const waypointCoordinates: Record<Waypoint, { x: number; y: number }> = {
+    bed: { x: -150, y: 0 },
+    window: { x: -85, y: -6 },
+    rug: { x: 0, y: 0 },
+    front: { x: 0, y: 15 },
+    toy: { x: 92, y: 0 },
+    bowl: { x: 155, y: 0 },
+  };
+
+  const [position, setPosition] = useState<{ x: number; y: number }>(
+    isSleeping ? waypointCoordinates.bed : waypointCoordinates.rug
+  );
   const [internalState, setInternalState] = useState<PetState>(externalState);
   const [facingDirection, setFacingDirection] = useState<1 | -1>(1); // 1 = right, -1 = left
   const [isWalking, setIsWalking] = useState(false);
-  const lastExternalStateRef = useRef(externalState);
+  const [walkDuration, setWalkDuration] = useState(1.4);
+  const [isDragging, setIsDragging] = useState(false);
+  const [clickMarker, setClickMarker] = useState<{ x: number; y: number; key: number } | null>(null);
 
-  // Waypoint coordinate mappings (in pixels offset from center)
-  const waypointCoordinates: Record<Waypoint, { x: number; y: number }> = {
-    bed: { x: -150, y: 0 },
-    window: { x: -80, y: -6 },
-    rug: { x: 0, y: 0 },
-    front: { x: 0, y: 14 },
-    toy: { x: 90, y: 0 },
-    bowl: { x: 155, y: 0 },
-  };
+  const floorRef = useRef<HTMLDivElement>(null);
+  const lastExternalStateRef = useRef(externalState);
+  const lastManualActionRef = useRef<number>(Date.now());
+  const walkTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Sync when sleeping state changes externally
   useEffect(() => {
     if (isSleeping) {
-      setCurrentWaypoint('bed');
+      if (walkTimeoutRef.current) clearTimeout(walkTimeoutRef.current);
+      setPosition(waypointCoordinates.bed);
+      setIsWalking(false);
       setInternalState('sleeping');
     }
   }, [isSleeping]);
@@ -64,94 +75,159 @@ export const RoomEnvironment: React.FC<RoomEnvironmentProps> = ({
     if (externalState !== lastExternalStateRef.current) {
       lastExternalStateRef.current = externalState;
       if (externalState === 'eating') {
-        moveToWaypoint('bowl', 'eating');
+        walkTo(waypointCoordinates.bowl.x, waypointCoordinates.bowl.y, 'eating');
       } else if (externalState === 'playing') {
-        moveToWaypoint('toy', 'playing');
+        walkTo(waypointCoordinates.toy.x, waypointCoordinates.toy.y, 'playing');
       } else if (externalState === 'sleeping') {
-        moveToWaypoint('bed', 'sleeping');
+        walkTo(waypointCoordinates.bed.x, waypointCoordinates.bed.y, 'sleeping');
       } else if (externalState === 'affectionate') {
-        moveToWaypoint('front', 'affectionate');
+        walkTo(waypointCoordinates.front.x, waypointCoordinates.front.y, 'affectionate');
       } else {
         setInternalState(externalState);
       }
     }
   }, [externalState]);
 
-  // Function to move cat to a waypoint with walk cycle
-  const moveToWaypoint = (target: Waypoint, arrivalState: PetState = 'idle') => {
-    if (target === currentWaypoint && internalState === arrivalState) return;
+  // Core Walk Animation Controller
+  const walkTo = (
+    targetX: number,
+    targetY: number,
+    arrivalState: PetState = 'idle',
+    customDuration?: number
+  ) => {
+    if (walkTimeoutRef.current) {
+      clearTimeout(walkTimeoutRef.current);
+    }
 
-    const startX = waypointCoordinates[currentWaypoint].x;
-    const targetX = waypointCoordinates[target].x;
+    const startX = position.x;
+    const startY = position.y;
+    const distance = Math.hypot(targetX - startX, targetY - startY);
 
-    if (targetX > startX) {
+    // If target is practically where the cat already is
+    if (distance < 8) {
+      setInternalState(arrivalState);
+      return;
+    }
+
+    // Set facing direction
+    if (targetX > startX + 2) {
       setFacingDirection(1); // Face right
-    } else if (targetX < startX) {
+    } else if (targetX < startX - 2) {
       setFacingDirection(-1); // Face left
     }
 
+    const duration = customDuration ?? Math.max(0.7, Math.min(2.2, distance / 95));
+    setWalkDuration(duration);
     setIsWalking(true);
     setInternalState('walking');
-    setCurrentWaypoint(target);
+    setPosition({ x: targetX, y: targetY });
 
-    // After walking duration, arrive at destination
-    setTimeout(() => {
+    walkTimeoutRef.current = setTimeout(() => {
       setIsWalking(false);
       setInternalState(arrivalState);
-    }, 1800);
+    }, duration * 1000);
   };
 
-  // Autonomous Behavior Loop
+  // Autonomous Behavior Loop (Wandering naturally across the room)
   useEffect(() => {
-    // If user is currently doing an action or cat is sleeping, don't interrupt
-    if (isSleeping || isWalking) return;
-
     const autonomousTimer = setInterval(() => {
-      // Evaluate internal conditions
+      // Do not wander if sleeping, walking, dragging, or if user recently moved the cat
+      if (isSleeping || isWalking || isDragging) return;
+      if (Date.now() - lastManualActionRef.current < 6500) return;
+
       const currentHunger = stats?.hunger ?? 20;
       const currentEnergy = stats?.energy ?? 80;
       const currentCleanliness = stats?.cleanliness ?? 90;
       const currentAffection = stats?.affection ?? 60;
       const pCode = personality?.code || 'playful';
 
-      // 1. If very hungry, cat wanders over to the bowl to inspect it
-      if (currentHunger > 65 && currentWaypoint !== 'bowl') {
-        moveToWaypoint('bowl', 'curious');
+      // 1. If hungry, walk to the bowl
+      if (currentHunger > 65 && Math.abs(position.x - waypointCoordinates.bowl.x) > 30) {
+        walkTo(waypointCoordinates.bowl.x, waypointCoordinates.bowl.y, 'curious');
         return;
       }
 
-      // 2. If very tired, wander to bed unit
-      if (currentEnergy < 25 && currentWaypoint !== 'bed') {
-        moveToWaypoint('bed', 'sitting');
+      // 2. If tired, wander to bed unit
+      if (currentEnergy < 25 && Math.abs(position.x - waypointCoordinates.bed.x) > 30) {
+        walkTo(waypointCoordinates.bed.x, waypointCoordinates.bed.y, 'sitting');
         return;
       }
 
-      // 3. If grooming needed (cleanliness low), sit down and groom
+      // 3. If cleanliness is low, groom on rug
       if (currentCleanliness < 45 && internalState !== 'grooming') {
-        moveToWaypoint('rug', 'grooming');
+        walkTo(waypointCoordinates.rug.x, waypointCoordinates.rug.y, 'grooming');
         return;
       }
 
       // 4. Personality-driven wandering
       const rand = Math.random();
-      if (pCode === 'playful' && rand < 0.45 && currentWaypoint !== 'toy') {
-        moveToWaypoint('toy', 'playing');
+      if (pCode === 'playful' && rand < 0.45 && Math.abs(position.x - waypointCoordinates.toy.x) > 25) {
+        walkTo(waypointCoordinates.toy.x, waypointCoordinates.toy.y, 'playing');
       } else if (pCode === 'lazy' && rand < 0.5) {
-        moveToWaypoint(rand < 0.25 ? 'bed' : 'rug', 'sitting');
+        const dest = rand < 0.25 ? waypointCoordinates.bed : waypointCoordinates.rug;
+        walkTo(dest.x, dest.y, 'sitting');
       } else if (pCode === 'affectionate' && currentAffection > 50 && rand < 0.4) {
-        moveToWaypoint('front', 'affectionate');
+        walkTo(waypointCoordinates.front.x, waypointCoordinates.front.y, 'affectionate');
       } else {
-        // General natural roaming
-        const candidates: Waypoint[] = ['rug', 'window', 'toy', 'front'];
-        const filtered = candidates.filter((w) => w !== currentWaypoint);
-        const nextTarget = filtered[Math.floor(Math.random() * filtered.length)];
-        const nextState: PetState = rand < 0.3 ? 'sitting' : rand < 0.6 ? 'curious' : 'idle';
-        moveToWaypoint(nextTarget, nextState);
+        // Natural lively wandering across diverse spots
+        const wanderSpots = [
+          { ...waypointCoordinates.rug, state: rand < 0.3 ? 'sitting' : 'happy' },
+          { ...waypointCoordinates.window, state: 'curious' },
+          { ...waypointCoordinates.toy, state: 'curious' },
+          { x: -65, y: 8, state: 'sitting' },
+          { x: 65, y: 10, state: 'curious' },
+          { ...waypointCoordinates.front, state: 'sitting' },
+        ];
+
+        // Filter out spots that are very close to current position
+        const filtered = wanderSpots.filter(
+          (s) => Math.hypot(s.x - position.x, s.y - position.y) > 40
+        );
+
+        if (filtered.length > 0) {
+          const nextTarget = filtered[Math.floor(Math.random() * filtered.length)];
+          walkTo(nextTarget.x, nextTarget.y, nextTarget.state as PetState);
+        }
       }
-    }, 14000 + Math.random() * 6000);
+    }, 5500 + Math.random() * 3500);
 
     return () => clearInterval(autonomousTimer);
-  }, [currentWaypoint, isSleeping, isWalking, internalState, stats, personality]);
+  }, [position, isSleeping, isWalking, isDragging, internalState, stats, personality]);
+
+  // Clean up timer on unmount
+  useEffect(() => {
+    return () => {
+      if (walkTimeoutRef.current) clearTimeout(walkTimeoutRef.current);
+    };
+  }, []);
+
+  // Handle floor clicks to move the cat manually
+  const handleFloorClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    const target = e.target as HTMLElement;
+    // Don't trigger if clicked on an interactive control
+    if (target.closest('button, [data-interactive="true"], .cat-character-container')) {
+      return;
+    }
+
+    if (!floorRef.current) return;
+    const rect = floorRef.current.getBoundingClientRect();
+
+    // Horizontal offset relative to center of room
+    const clickX = e.clientX - (rect.left + rect.width / 2);
+    const clampedX = Math.max(-165, Math.min(165, Math.round(clickX)));
+
+    // Vertical offset within floor (-15 to 20)
+    const clickY = e.clientY - rect.top;
+    const clampedY = Math.max(-15, Math.min(20, Math.round(((clickY - 70) / 90) * 35)));
+
+    // Set beacon marker
+    setClickMarker({ x: clampedX, y: clampedY, key: Date.now() });
+    sounds.playClick();
+
+    // Order cat to walk to clicked location
+    lastManualActionRef.current = Date.now();
+    walkTo(clampedX, clampedY, 'curious');
+  };
 
   const roomStyles = {
     day: {
@@ -227,7 +303,7 @@ export const RoomEnvironment: React.FC<RoomEnvironmentProps> = ({
       </div>
 
       {/* Main Room Canvas */}
-      <div className="relative w-full h-[360px] sm:h-[400px] rounded-lg overflow-hidden border border-[#E7E2DA] dark:border-[#2D2A26] bg-[#F4F0E8] dark:bg-[#1A1816] flex flex-col justify-between">
+      <div className="relative w-full h-[360px] sm:h-[400px] rounded-lg overflow-hidden border border-[#E7E2DA] dark:border-[#2D2A26] bg-[#F4F0E8] dark:bg-[#1A1816] flex flex-col justify-between select-none">
         
         {/* Architectural Back Wall Elements */}
         <div className="absolute inset-0 flex justify-between p-6 pointer-events-none">
@@ -267,22 +343,52 @@ export const RoomEnvironment: React.FC<RoomEnvironmentProps> = ({
           </div>
         </div>
 
-        {/* Floor Transition & Clean Planks */}
-        <div className="absolute bottom-0 left-0 right-0 h-40 bg-[#E8DFCFC0] dark:bg-[#201D1A] border-t border-[#D5CDC2] dark:border-[#38332E]">
-          <div className="w-full h-full opacity-15 bg-[linear-gradient(90deg,transparent_49%,rgba(34,32,29,0.3)_50%,transparent_51%)] dark:bg-[linear-gradient(90deg,transparent_49%,rgba(255,255,255,0.15)_50%,transparent_51%)] bg-[length:100px_100%]" />
+        {/* Floor Transition & Clean Interactive Planks */}
+        <div
+          ref={floorRef}
+          onClick={handleFloorClick}
+          className="absolute bottom-0 left-0 right-0 h-40 bg-[#E8DFCFC0] dark:bg-[#201D1A] border-t border-[#D5CDC2] dark:border-[#38332E] cursor-pointer"
+          title="Klik lantai untuk memanggil kucing ke lokasi ini"
+        >
+          <div className="w-full h-full opacity-15 bg-[linear-gradient(90deg,transparent_49%,rgba(34,32,29,0.3)_50%,transparent_51%)] dark:bg-[linear-gradient(90deg,transparent_49%,rgba(255,255,255,0.15)_50%,transparent_51%)] bg-[length:100px_100%] pointer-events-none" />
         </div>
 
+        {/* Dynamic Floor Click Ripple / Target Marker */}
+        <AnimatePresence>
+          {clickMarker && (
+            <motion.div
+              key={clickMarker.key}
+              initial={{ scale: 0.2, opacity: 0.9 }}
+              animate={{ scale: 1.25, opacity: 0 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.75, ease: 'easeOut' }}
+              style={{
+                left: `calc(50% + ${clickMarker.x}px)`,
+                bottom: `${22 + clickMarker.y}px`,
+              }}
+              className="absolute -translate-x-1/2 pointer-events-none z-15 flex flex-col items-center"
+            >
+              <div className="w-7 h-7 rounded-full border-2 border-[var(--accent)] bg-[var(--accent)]/20 flex items-center justify-center">
+                <Footprints className="w-3.5 h-3.5 text-[var(--accent)]" />
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         {/* Interactive Floor Objects & Center Rug */}
-        <div className="relative w-full h-full flex items-end justify-between px-4 sm:px-10 pb-4 z-10 pointer-events-auto">
+        <div className="relative w-full h-full flex items-end justify-between px-4 sm:px-10 pb-4 z-10 pointer-events-none">
 
           {/* 1. Bed Unit (Left) */}
           <div
+            data-interactive="true"
             onClick={() => {
               sounds.playClick();
+              lastManualActionRef.current = Date.now();
+              walkTo(waypointCoordinates.bed.x, waypointCoordinates.bed.y, isSleeping ? 'idle' : 'sleeping');
               onObjectClick('bed');
             }}
-            className="cursor-pointer group flex flex-col items-center btn-press z-10"
-            title="Tempat Tidur (Klik untuk tidur atau bangun)"
+            className="pointer-events-auto cursor-pointer group flex flex-col items-center btn-press z-10"
+            title="Tempat Tidur (Klik untuk memanggil kucing / tidur)"
           >
             <div className="relative w-24 sm:w-28 h-12 sm:h-14 rounded-full bg-[#DACDBE] dark:bg-[#2A2622] border border-[#BDB2A6] dark:border-[#423C36] flex items-center justify-center transition-colors group-hover:border-[var(--accent)]">
               <div className="w-4/5 h-4/5 rounded-full bg-[#EAE2D7] dark:bg-[#332E28] border border-[#D5CDC2] dark:border-[#48423B] flex items-center justify-center">
@@ -299,20 +405,38 @@ export const RoomEnvironment: React.FC<RoomEnvironmentProps> = ({
             </span>
           </div>
 
-          {/* 2. Center Area: Floor Rug */}
-          <div className="relative flex flex-col items-center justify-end -mb-2 pointer-events-none">
-            <div className="w-48 sm:w-64 h-16 sm:h-20 rounded-[50%] bg-[#EFE9DF] dark:bg-[#25221F] border border-[#D5CDC2] dark:border-[#38332E]" />
+          {/* 2. Center Area: Floor Rug (Cleanly Unobstructed, Clickable) */}
+          <div
+            data-interactive="true"
+            onClick={(e) => {
+              e.stopPropagation();
+              sounds.playPurr();
+              lastManualActionRef.current = Date.now();
+              walkTo(waypointCoordinates.rug.x, waypointCoordinates.rug.y, 'sitting');
+            }}
+            className="pointer-events-auto relative flex flex-col items-center justify-end -mb-1 cursor-pointer group z-10"
+            title="Karpet Santai (Klik untuk memanggil kucing ke karpet)"
+          >
+            <div className="w-48 sm:w-64 h-16 sm:h-20 rounded-[50%] bg-[#EAE2D5] dark:bg-[#262320] border border-[#D0C6B8] dark:border-[#3E3832] transition-colors group-hover:border-[var(--accent)] flex items-center justify-center">
+              <div className="w-[88%] h-[78%] rounded-[50%] border border-dashed border-[#D5CDC2] dark:border-[#38332E] opacity-60" />
+            </div>
+            <span className="font-mono text-[9px] text-[#8E8376] dark:text-[#7E756B] group-hover:text-[#22201D] dark:group-hover:text-[#F6F4EE] transition-colors mt-1 uppercase tracking-wider">
+              RUG AREA
+            </span>
           </div>
 
           {/* 3. Right Side: Food Bowl + Toy */}
           <div className="flex items-end gap-3 sm:gap-4 z-10">
             {/* Toy */}
             <div
+              data-interactive="true"
               onClick={() => {
                 sounds.playPounce();
+                lastManualActionRef.current = Date.now();
+                walkTo(waypointCoordinates.toy.x, waypointCoordinates.toy.y, 'playing');
                 onObjectClick('toy');
               }}
-              className="cursor-pointer group flex flex-col items-center btn-press"
+              className="pointer-events-auto cursor-pointer group flex flex-col items-center btn-press"
               title="Mainan (Klik untuk bermain)"
             >
               <div className="w-9 h-9 rounded-full bg-[#FAF8F5] dark:bg-[#1E1C1A] border border-[#BDB2A6] dark:border-[#423C36] flex items-center justify-center transition-colors group-hover:border-[var(--accent)]">
@@ -325,11 +449,14 @@ export const RoomEnvironment: React.FC<RoomEnvironmentProps> = ({
 
             {/* Food Bowl */}
             <div
+              data-interactive="true"
               onClick={() => {
                 sounds.playCrunch();
+                lastManualActionRef.current = Date.now();
+                walkTo(waypointCoordinates.bowl.x, waypointCoordinates.bowl.y, 'eating');
                 onObjectClick('bowl');
               }}
-              className="cursor-pointer group flex flex-col items-center btn-press"
+              className="pointer-events-auto cursor-pointer group flex flex-col items-center btn-press"
               title="Mangkok Pakan (Klik untuk memberi makan)"
             >
               <div className="w-12 sm:w-14 h-7 sm:h-8 rounded-[50%] bg-[#22201D] dark:bg-[#141311] border border-[#141311] dark:border-[#38332E] flex items-center justify-center transition-colors group-hover:border-[var(--accent)]">
@@ -345,34 +472,104 @@ export const RoomEnvironment: React.FC<RoomEnvironmentProps> = ({
 
         </div>
 
-        {/* 4. AUTONOMOUS WALKING CAT (Dynamic Positioning Across Room Plane) */}
+        {/* 4. AUTONOMOUS & DRAGGABLE CAT CHARACTER */}
         <motion.div
-          animate={{
-            x: waypointCoordinates[currentWaypoint].x,
-            y: waypointCoordinates[currentWaypoint].y,
-            scaleX: facingDirection,
-          }}
+          drag={!isSleeping}
+          dragConstraints={{ left: -165, right: 165, top: -18, bottom: 22 }}
+          dragElastic={0.12}
+          dragMomentum={false}
+          whileDrag={{ scale: 1.08, zIndex: 40 }}
+          animate={
+            isDragging
+              ? undefined
+              : {
+                  x: position.x,
+                  y: position.y,
+                  scaleX: facingDirection,
+                }
+          }
           transition={{
-            duration: isWalking ? 1.8 : 0.4,
+            duration: isWalking ? walkDuration : 0.35,
             ease: [0.22, 1, 0.36, 1],
           }}
-          className="absolute bottom-5 left-1/2 -translate-x-1/2 z-20 pointer-events-auto"
+          onDragStart={() => {
+            setIsDragging(true);
+            setIsWalking(false);
+            if (walkTimeoutRef.current) clearTimeout(walkTimeoutRef.current);
+            setInternalState('curious');
+            sounds.playPurr();
+            lastManualActionRef.current = Date.now();
+          }}
+          onDragEnd={(_e, info) => {
+            setIsDragging(false);
+
+            // If drag movement is tiny, treat as a click/pet action
+            const dragDist = Math.hypot(info.offset.x, info.offset.y);
+            if (dragDist < 6) {
+              onCatClick();
+              return;
+            }
+
+            const newX = Math.max(-165, Math.min(165, Math.round(position.x + info.offset.x)));
+            const newY = Math.max(-15, Math.min(20, Math.round(position.y + info.offset.y)));
+
+            if (newX > position.x) setFacingDirection(1);
+            else if (newX < position.x) setFacingDirection(-1);
+
+            setPosition({ x: newX, y: newY });
+            lastManualActionRef.current = Date.now();
+            sounds.playPounce();
+
+            // Contextual reaction based on drop location
+            if (Math.abs(newX - waypointCoordinates.bed.x) < 35) {
+              setInternalState('sitting');
+            } else if (Math.abs(newX - waypointCoordinates.bowl.x) < 35) {
+              setInternalState('curious');
+            } else if (Math.abs(newX - waypointCoordinates.toy.x) < 35) {
+              setInternalState('playing');
+            } else {
+              setInternalState('happy');
+              setTimeout(() => {
+                setInternalState((prev) => (prev === 'happy' ? 'sitting' : prev));
+              }, 1400);
+            }
+          }}
+          className={`absolute bottom-5 left-1/2 -translate-x-1/2 z-20 cat-character-container pointer-events-auto select-none ${
+            isDragging ? 'cursor-grabbing' : 'cursor-grab'
+          }`}
+          title="Tarik (drag) untuk memindahkan, atau klik untuk mengelus"
         >
           <CatCharacter
             customization={customization}
             state={internalState}
-            onClick={onCatClick}
+            onClick={() => {
+              if (!isDragging) onCatClick();
+            }}
             size="lg"
             showShadow={true}
           />
         </motion.div>
 
-        {/* Minimalist Hint Bar */}
-        <div className="absolute bottom-2 left-1/2 -translate-x-1/2 bg-[#FCFBF8]/90 dark:bg-[#181615]/90 px-3 py-1 rounded border border-[#E7E2DA] dark:border-[#2D2A26] flex items-center gap-1.5 font-mono text-[10px] text-[#756A5E] dark:text-[#B5ACA1] pointer-events-none">
-          <Info className="w-3 h-3 text-[#9E9284]" />
-          <span>KLIK KARAKTER ATAU OBJEK UNTUK BERINTERAKSI // PERILAKU OTONOM AKTIF</span>
+      </div>
+
+      {/* Control Guidance & Telemetry Footer Bar - Safely Below Room Canvas (Zero Overlap with Rug) */}
+      <div className="mt-3.5 pt-3 border-t border-[#E7E2DA] dark:border-[#2D2A26] flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 font-mono text-xs text-[#756A5E] dark:text-[#B5ACA1]">
+        <div className="flex items-center gap-2 flex-wrap">
+          <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-[#F4F0E8] dark:bg-[#1E1C1A] border border-[#E7E2DA] dark:border-[#2D2A26] text-[#22201D] dark:text-[#F6F4EE] font-semibold text-[10px]">
+            <Hand className="w-3 h-3 text-[var(--accent)]" />
+            <span>KONTROL INTERAKTIF</span>
+          </div>
+          <span className="text-[11px]">
+            Klik lantai untuk memanggil • Tarik (drag) karakter untuk memindahkan • Perilaku otonom aktif
+          </span>
+        </div>
+
+        <div className="flex items-center gap-2 text-[10px] text-[#9E9284] dark:text-[#7E756B] self-end sm:self-auto">
+          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+          <span>OTONOM BERJALAN</span>
         </div>
       </div>
+
     </div>
   );
 };
