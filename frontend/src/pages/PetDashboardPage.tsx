@@ -123,6 +123,10 @@ export const PetDashboardPage: React.FC<PetDashboardPageProps> = ({
     else if (action === 'clean_room') sounds.playClick();
     else if (action === 'scold') sounds.playScoldReaction();
     else if (action === 'sleep') sounds.playSleepChime();
+    else if (action === 'cat_grass') sounds.playGrassCrunch();
+    else if (action === 'water_fountain') sounds.playWaterStream();
+    else if (action === 'scratch_tree') sounds.playScratch();
+    else if (action === 'treat') sounds.playCrunch();
     else sounds.playClick();
 
     try {
@@ -152,7 +156,11 @@ export const PetDashboardPage: React.FC<PetDashboardPageProps> = ({
   const handleObjectClick = (objectType: string) => {
     if (objectType === 'bowl') handleAction('feed');
     else if (objectType === 'bed') handleAction('sleep');
-    else if (objectType === 'toy') handleAction('play');
+    else if (objectType === 'toy' || objectType === 'butterfly') handleAction('play');
+    else if (objectType === 'cat_grass') handleAction('cat_grass');
+    else if (objectType === 'water_fountain') handleAction('water_fountain');
+    else if (objectType === 'scratch_tree') handleAction('scratch_tree');
+    else if (objectType === 'treat') handleAction('treat');
   };
 
   // Handle direct cat click
@@ -225,7 +233,13 @@ export const PetDashboardPage: React.FC<PetDashboardPageProps> = ({
               )}
             </div>
             <p className="font-mono text-[11px] text-[#756A5E] dark:text-[#B5ACA1] flex flex-wrap items-center gap-2 mt-0.5 uppercase tracking-wider">
-              <span>{cat.gender}</span>
+              <span className={`font-semibold px-1.5 py-0.2 rounded border ${
+                cat.gender === 'male'
+                  ? 'text-sky-700 dark:text-sky-300 border-sky-300 dark:border-sky-800 bg-sky-50 dark:bg-sky-950/40'
+                  : 'text-rose-700 dark:text-rose-300 border-rose-300 dark:border-rose-800 bg-rose-50 dark:bg-rose-950/40'
+              }`}>
+                {cat.gender === 'male' ? '♂ JANTAN' : '♀ BETINA'}
+              </span>
               <span>/</span>
               <span>{cat.personality.name}</span>
               <span>/</span>
@@ -318,6 +332,7 @@ export const PetDashboardPage: React.FC<PetDashboardPageProps> = ({
           thought={cat.current_thought}
           state={cat.current_state}
           catName={cat.name}
+          gender={cat.gender}
         />
 
         <RoomEnvironment
@@ -325,6 +340,7 @@ export const PetDashboardPage: React.FC<PetDashboardPageProps> = ({
           state={cat.current_state}
           catName={cat.name}
           isSleeping={cat.is_sleeping}
+          gender={cat.gender}
           stats={cat.stats}
           personality={cat.personality}
           onCatClick={handleCatClick}

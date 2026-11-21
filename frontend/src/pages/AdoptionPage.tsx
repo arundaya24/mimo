@@ -180,39 +180,60 @@ export const AdoptionPage: React.FC<AdoptionPageProps> = ({ onAdoptionSuccess, o
               />
             </div>
 
-            {/* Gender Selector */}
-            <div>
-              <label className="block font-mono text-[10px] font-semibold uppercase tracking-wider text-[#756A5E] dark:text-[#B5ACA1] mb-1.5">
-                JENIS KELAMIN
-              </label>
-              <div className="grid grid-cols-3 gap-2 font-mono text-xs">
-                {[
-                  { value: 'female', label: 'FEMALE', code: 'BETINA' },
-                  { value: 'male', label: 'MALE', code: 'JANTAN' },
-                  { value: 'non-binary', label: 'NEUTRAL', code: 'NETRAL' },
-                ].map((g) => {
-                  const isSelected = gender === g.value;
-                  return (
-                    <button
-                      key={g.value}
-                      type="button"
-                      onClick={() => {
-                        sounds.playClick();
-                        setGender(g.value);
-                      }}
-                      className={`btn-press p-2.5 rounded-lg border text-left transition-colors ${
-                        isSelected
-                          ? 'border-[var(--accent)] bg-[#FDF6F2] dark:bg-[#2A1810] text-[var(--accent)] font-semibold'
-                          : 'border-[#E7E2DA] dark:border-[#2D2A26] bg-[#FCFBF8] dark:bg-[#181615] text-[#5A5046] dark:text-[#B5ACA1] hover:border-[#C8BFB3]'
-                      }`}
-                    >
-                      <span className="block font-semibold">{g.label}</span>
-                      <span className="text-[10px] text-[#9E9284] dark:text-[#7E756B]">{g.code}</span>
-                    </button>
-                  );
-                })}
+              {/* Gender Selector */}
+              <div>
+                <label className="block font-mono text-[10px] font-semibold uppercase tracking-wider text-[#756A5E] dark:text-[#B5ACA1] mb-1.5">
+                  JENIS KELAMIN // SEX
+                </label>
+                <div className="grid grid-cols-2 gap-2.5 font-mono text-xs">
+                  {[
+                    {
+                      value: 'female',
+                      label: 'BETINA / FEMALE',
+                      symbol: '♀',
+                      badge: 'ANGGUN',
+                      desc: 'Bulu mata lentik, kontur manis, vokal chirpy & manja',
+                    },
+                    {
+                      value: 'male',
+                      label: 'JANTAN / MALE',
+                      symbol: '♂',
+                      badge: 'TANGGUH',
+                      desc: 'Pipi kekar (stud jowls), kumis tebal, vokal berat & teritorial',
+                    },
+                  ].map((g) => {
+                    const isSelected = gender === g.value;
+                    return (
+                      <button
+                        key={g.value}
+                        type="button"
+                        onClick={() => {
+                          sounds.playClick();
+                          setGender(g.value);
+                          sounds.playMeow(g.value === 'male' ? 0.88 : 1.18);
+                        }}
+                        className={`btn-press p-3 rounded-lg border text-left transition-colors flex flex-col justify-between ${
+                          isSelected
+                            ? 'border-[var(--accent)] bg-[#FDF6F2] dark:bg-[#2A1810] text-[var(--accent)] font-semibold'
+                            : 'border-[#E7E2DA] dark:border-[#2D2A26] bg-[#FCFBF8] dark:bg-[#181615] text-[#5A5046] dark:text-[#B5ACA1] hover:border-[#C8BFB3]'
+                        }`}
+                      >
+                        <div className="flex items-center justify-between mb-1.5">
+                          <span className="font-semibold text-xs text-[#141311] dark:text-[#F6F4EE]">
+                            {g.symbol} {g.label}
+                          </span>
+                          <span className="text-[9px] px-1.5 py-0.2 rounded border border-[var(--accent)] text-[var(--accent)] font-mono">
+                            {g.badge}
+                          </span>
+                        </div>
+                        <span className="text-[10px] text-[#9E9284] dark:text-[#7E756B] leading-tight">
+                          {g.desc}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
-            </div>
 
             {/* Personality Selector */}
             <div>
@@ -290,7 +311,8 @@ export const AdoptionPage: React.FC<AdoptionPageProps> = ({ onAdoptionSuccess, o
                   customization={customization}
                   state="happy"
                   size="lg"
-                  onClick={() => sounds.playMeow()}
+                  gender={gender}
+                  onClick={() => sounds.playMeow(gender === 'male' ? 0.88 : 1.18)}
                 />
               </div>
               <div className="pt-2 font-mono text-xs">
@@ -385,7 +407,8 @@ export const AdoptionPage: React.FC<AdoptionPageProps> = ({ onAdoptionSuccess, o
                   customization={customization}
                   state={previewState}
                   size="xl"
-                  onClick={() => sounds.playMeow()}
+                  gender={gender}
+                  onClick={() => sounds.playMeow(gender === 'male' ? 0.88 : 1.18)}
                 />
               </div>
               <div className="font-mono text-[11px] text-[#756A5E] dark:text-[#B5ACA1] uppercase">
@@ -419,6 +442,7 @@ export const AdoptionPage: React.FC<AdoptionPageProps> = ({ onAdoptionSuccess, o
                 customization={customization}
                 state="affectionate"
                 size="lg"
+                gender={gender}
                 onClick={() => sounds.playPurr()}
               />
             </div>

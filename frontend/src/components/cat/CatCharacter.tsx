@@ -9,6 +9,7 @@ interface CatCharacterProps {
   className?: string;
   size?: 'sm' | 'md' | 'lg' | 'xl';
   showShadow?: boolean;
+  gender?: 'male' | 'female' | string;
 }
 
 export const CatCharacter: React.FC<CatCharacterProps> = ({
@@ -18,6 +19,7 @@ export const CatCharacter: React.FC<CatCharacterProps> = ({
   className = '',
   size = 'lg',
   showShadow = true,
+  gender = 'female',
 }) => {
   const [isBlinking, setIsBlinking] = useState(false);
 
@@ -463,19 +465,33 @@ export const CatCharacter: React.FC<CatCharacterProps> = ({
           <ellipse
             cx="120"
             cy="105"
-            rx="52"
-            ry="44"
+            rx={gender === 'male' ? "54" : "51"}
+            ry={gender === 'male' ? "46" : "43"}
             fill={fur_color}
             filter="url(#softShadow)"
           />
 
-          {/* Chubby Cheeks */}
-          <ellipse cx="80" cy="115" rx="18" ry="14" fill={fur_color} />
-          <ellipse cx="160" cy="115" rx="18" ry="14" fill={fur_color} />
+          {/* Chubby Cheeks (Stud jowls for male, soft tapered for female) */}
+          {gender === 'male' ? (
+            <>
+              {/* Broad Tomcat Stud Jowls */}
+              <ellipse cx="76" cy="116" rx="22" ry="16" fill={fur_color} />
+              <ellipse cx="164" cy="116" rx="22" ry="16" fill={fur_color} />
+              {/* Male jawline contour shadow */}
+              <path d="M 74 124 Q 82 128 88 122" stroke="#3D2E24" strokeWidth="1.2" opacity="0.25" fill="none" />
+              <path d="M 166 124 Q 158 128 152 122" stroke="#3D2E24" strokeWidth="1.2" opacity="0.25" fill="none" />
+            </>
+          ) : (
+            <>
+              {/* Dainty Soft Feminine Cheeks */}
+              <ellipse cx="80" cy="115" rx="17" ry="13" fill={fur_color} />
+              <ellipse cx="160" cy="115" rx="17" ry="13" fill={fur_color} />
+            </>
+          )}
 
           {/* Forehead Tabby Markings / Pattern */}
           {pattern === 'stripes' && (
-            <g stroke={pattern_color} strokeWidth="3.5" strokeLinecap="round" opacity="0.8">
+            <g stroke={pattern_color} strokeWidth={gender === 'male' ? "4.0" : "3.5"} strokeLinecap="round" opacity="0.8">
               <path d="M 120 70 L 120 82" />
               <path d="M 112 73 L 115 84" />
               <path d="M 128 73 L 125 84" />
@@ -492,8 +508,34 @@ export const CatCharacter: React.FC<CatCharacterProps> = ({
           )}
 
           {/* Rosy Cheeks (Blush) */}
-          <ellipse cx="88" cy="116" rx="8" ry="5" fill="#F472B6" opacity={isHappy || isAffectionate ? "0.55" : "0.25"} />
-          <ellipse cx="152" cy="116" rx="8" ry="5" fill="#F472B6" opacity={isHappy || isAffectionate ? "0.55" : "0.25"} />
+          <ellipse
+            cx="88"
+            cy="116"
+            rx={gender === 'female' ? "9" : "6"}
+            ry={gender === 'female' ? "6" : "4"}
+            fill="#F472B6"
+            opacity={gender === 'female' ? (isHappy || isAffectionate ? "0.6" : "0.35") : "0.12"}
+          />
+          <ellipse
+            cx="152"
+            cy="116"
+            rx={gender === 'female' ? "9" : "6"}
+            ry={gender === 'female' ? "6" : "4"}
+            fill="#F472B6"
+            opacity={gender === 'female' ? (isHappy || isAffectionate ? "0.6" : "0.35") : "0.12"}
+          />
+
+          {/* Feminine Curved Eyelashes */}
+          {gender === 'female' && !isAngry && !isScared && (
+            <g stroke="#261F18" strokeWidth="1.8" strokeLinecap="round" fill="none">
+              {/* Left eye outer curved lashes */}
+              <path d="M 93 98 C 88 94 85 92 82 95" />
+              <path d="M 95 95 C 91 89 87 87 85 89" />
+              {/* Right eye outer curved lashes */}
+              <path d="M 147 98 C 152 94 155 92 158 95" />
+              <path d="M 145 95 C 149 89 153 87 155 89" />
+            </g>
+          )}
 
           {/* ================= 4. EYES ================= */}
           <g id="eyes">
@@ -592,14 +634,19 @@ export const CatCharacter: React.FC<CatCharacterProps> = ({
             />
           )}
 
-          {/* Whiskers */}
-          <g stroke="#5C4D41" strokeWidth="1.4" strokeLinecap="round" opacity="0.6">
+          {/* Whiskers (Distinct Masculine Rugged vs Feminine Delicate) */}
+          <g
+            stroke="#5C4D41"
+            strokeWidth={gender === 'male' ? "2.0" : "1.2"}
+            strokeLinecap="round"
+            opacity={gender === 'male' ? "0.75" : "0.55"}
+          >
             {/* Left Whiskers */}
-            <line x1="88" y1="117" x2="60" y2="114" />
-            <line x1="88" y1="121" x2="62" y2="124" />
+            <line x1={gender === 'male' ? "84" : "88"} y1="117" x2="56" y2={gender === 'male' ? "112" : "114"} />
+            <line x1={gender === 'male' ? "84" : "88"} y1="122" x2="58" y2={gender === 'male' ? "125" : "124"} />
             {/* Right Whiskers */}
-            <line x1="152" y1="117" x2="180" y2="114" />
-            <line x1="152" y1="121" x2="178" y2="124" />
+            <line x1={gender === 'male' ? "156" : "152"} y1="117" x2="184" y2={gender === 'male' ? "112" : "114"} />
+            <line x1={gender === 'male' ? "156" : "152"} y1="122" x2="182" y2={gender === 'male' ? "125" : "124"} />
           </g>
 
           {/* ================= 6. COLLAR & BELL ================= */}

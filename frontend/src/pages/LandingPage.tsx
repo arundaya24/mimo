@@ -19,6 +19,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
   hasCat,
 }) => {
   const [demoState, setDemoState] = useState<PetState>('idle');
+  const [demoGender, setDemoGender] = useState<'female' | 'male'>('female');
 
   const demoCustomization: CatCustomization = {
     fur_color: '#E69A57',
@@ -142,15 +143,55 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                 <CatCharacter
                   customization={demoCustomization}
                   state={demoState}
-                  onClick={() => handleStateSelect(demoState === 'happy' ? 'idle' : 'happy')}
+                  gender={demoGender}
+                  onClick={() => {
+                    sounds.playMeow(demoGender === 'male' ? 0.88 : 1.18);
+                    handleStateSelect(demoState === 'happy' ? 'idle' : 'happy');
+                  }}
                   size="lg"
                   showShadow={true}
                 />
               </div>
 
-              {/* State Tester Buttons */}
-              <div>
-                <span className="font-mono text-[10px] uppercase tracking-wider text-[#9E9284] dark:text-[#7E756B] block mb-2">
+              {/* Sex & State Tester Controls */}
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="font-mono text-[10px] uppercase tracking-wider text-[#9E9284] dark:text-[#7E756B]">
+                    GENDER / SEX
+                  </span>
+                  <div className="flex items-center gap-1 font-mono text-[10px]">
+                    <button
+                      onClick={() => {
+                        sounds.playClick();
+                        setDemoGender('female');
+                        sounds.playMeow(1.18);
+                      }}
+                      className={`btn-press px-2 py-0.5 rounded border transition-colors ${
+                        demoGender === 'female'
+                          ? 'border-[var(--accent)] bg-[#FDF6F2] dark:bg-[#2A1810] text-[var(--accent)] font-semibold'
+                          : 'border-[#E7E2DA] dark:border-[#2D2A26] bg-[#FCFBF8] dark:bg-[#181615] text-[#756A5E] dark:text-[#B5ACA1]'
+                      }`}
+                    >
+                      ♀ BETINA
+                    </button>
+                    <button
+                      onClick={() => {
+                        sounds.playClick();
+                        setDemoGender('male');
+                        sounds.playMeow(0.88);
+                      }}
+                      className={`btn-press px-2 py-0.5 rounded border transition-colors ${
+                        demoGender === 'male'
+                          ? 'border-[var(--accent)] bg-[#FDF6F2] dark:bg-[#2A1810] text-[var(--accent)] font-semibold'
+                          : 'border-[#E7E2DA] dark:border-[#2D2A26] bg-[#FCFBF8] dark:bg-[#181615] text-[#756A5E] dark:text-[#B5ACA1]'
+                      }`}
+                    >
+                      ♂ JANTAN
+                    </button>
+                  </div>
+                </div>
+
+                <span className="font-mono text-[10px] uppercase tracking-wider text-[#9E9284] dark:text-[#7E756B] block">
                   SELECT BEHAVIORAL STATE
                 </span>
                 <div className="grid grid-cols-4 gap-1.5 font-mono text-[10px]">
