@@ -9,6 +9,7 @@ export type PetState =
   | 'scared'
   | 'angry'
   | 'curious'
+  | 'grooming'
   | 'affectionate';
 
 export type EarStyle = 'pointy' | 'folded' | 'round';
@@ -34,6 +35,8 @@ export interface CatStats {
   trust: number;      // 0 - 100
   fear: number;       // 0 - 100
   affection: number;  // 0 - 100
+  comfort: number;    // 0 - 100
+  cleanliness: number;// 0 - 100
 }
 
 export interface CatPersonality {
@@ -62,9 +65,23 @@ export interface Cat {
   personality: CatPersonality;
   stats: CatStats;
   customization: CatCustomization;
+  favorite_food?: string;
+  boredom_counter?: number;
   last_interaction_at?: string;
   last_fed_at?: string;
   last_slept_at?: string;
+}
+
+export interface UserSettings {
+  theme: 'light' | 'dark' | 'system';
+  accent_color: 'terracotta' | 'sage' | 'amber' | 'slate' | 'rose';
+  ui_scale: 'compact' | 'default' | 'comfortable';
+  master_volume: number;
+  sfx_enabled: boolean;
+  ambient_sound: boolean;
+  notifications: boolean;
+  feeding_reminder: boolean;
+  activity_simulation: boolean;
 }
 
 export interface InteractionResult {

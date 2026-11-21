@@ -1,5 +1,5 @@
 import { apiRequest } from './api';
-import { User } from '../types/pet';
+import { User, UserSettings } from '../types/pet';
 
 interface AuthResponse {
   message: string;
@@ -48,6 +48,41 @@ export const authService = {
     } finally {
       localStorage.removeItem('mimo_token');
     }
+  },
+
+  async getSettings(): Promise<UserSettings> {
+    const res = await apiRequest<{ settings: UserSettings }>('/user/settings');
+    return res.settings;
+  },
+
+  async updateSettings(settings: Partial<UserSettings>): Promise<{ message: string; settings: UserSettings }> {
+    return apiRequest<{ message: string; settings: UserSettings }>('/user/settings', {
+      method: 'PUT',
+      body: JSON.stringify(settings),
+    });
+  },
+
+  async updateProfile(name: string, email: string): Promise<{ message: string; user: User }> {
+    return apiRequest<{ message: string; user: User }>('/user/profile', {
+      method: 'PUT',
+      body: JSON.stringify({ name, email }),
+    });
+  },
+
+  async updatePassword(current_password: string, new_password: string, new_password_confirmation: string): Promise<{ message: string }> {
+    return apiRequest<{ message: string }>('/user/password', {
+      method: 'PUT',
+      body: JSON.stringify({ current_password, new_password, new_password_confirmation }),
+    });
+  },
+
+  async deleteAccount(password: string): Promise<{ message: string }> {
+    const res = await apiRequest<{ message: string }>('/user/account', {
+      method: 'DELETE',
+      body: JSON.stringify({ password }),
+    });
+    localStorage.removeItem('mimo_token');
+    return res;
   },
 
   getToken(): string | null {

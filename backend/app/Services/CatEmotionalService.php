@@ -45,8 +45,8 @@ class CatEmotionalService
         $energyMultiplier = $personality ? $personality->energy_decay_multiplier : 1.0;
         $happinessMultiplier = $personality ? $personality->happiness_decay_multiplier : 1.0;
 
-        // Hunger increases over time (~4 points per hour)
-        $newHunger = $stats->hunger + ($hours * 4.0 * $hungerMultiplier);
+        // Hunger increases over time (~3.5 points per hour), capped at 88% to avoid lethal starvation
+        $newHunger = min(88.0, $stats->hunger + ($hours * 3.5 * $hungerMultiplier));
 
         // Energy behavior: recovers if sleeping (~18 pts/hr), depletes if awake (~3.5 pts/hr)
         if ($cat->is_sleeping) {
@@ -56,18 +56,36 @@ class CatEmotionalService
                 $cat->is_sleeping = false;
             }
         } else {
-            $newEnergy = $stats->energy - ($hours * 3.5 * $energyMultiplier);
+            $newEnergy = max(20.0, $stats->energy - ($hours * 3.5 * $energyMultiplier));
         }
 
-        // Happiness decays faster if starving or lonely
-        $hungerPenalty = $stats->hunger > 70 ? 1.5 : 1.0;
-        $newHappiness = $stats->happiness - ($hours * 2.5 * $happinessMultiplier * $hungerPenalty);
+        // Cleanliness decays slowly over time
+        $currentCleanliness = $stats->cleanliness ?? 90.0;
+        $newCleanliness = max(30.0, $currentCleanliness - ($hours * 0.75));
 
-        // Affection decays very slightly if neglected (~1 point per 2 hours)
-        $newAffection = $stats->affection - ($hours * 0.5);
+        // Comfort decays, but recovers when sleeping; penalty if environment/cat is dirty
+        $cleanlinessPenalty = $newCleanliness < 50 ? 1.4 : 1.0;
+        $currentComfort = $stats->comfort ?? 85.0;
+        if ($cat->is_sleeping) {
+            $newComfort = min(100.0, $currentComfort + ($hours * 5.0));
+        } else {
+            $newComfort = max(25.0, $currentComfort - ($hours * 1.2 * $cleanlinessPenalty));
+        }
+
+        // Happiness decays, but has soft floor of 25 to avoid complete demoralization
+        $hungerPenalty = $stats->hunger > 70 ? 1.4 : 1.0;
+        $newHappiness = max(25.0, $stats->happiness - ($hours * 2.0 * $happinessMultiplier * $hungerPenalty));
+
+        // Affection decays very slightly if neglected, but never drops below 25
+        $newAffection = max(25.0, $stats->affection - ($hours * 0.4));
 
         // Fear naturally cools down over time towards 0
-        $newFear = $stats->fear - ($hours * 6.0);
+        $newFear = max(0.0, $stats->fear - ($hours * 6.0));
+
+        // Reset boredom if inactive for > 30 minutes
+        if ($hours >= 0.5) {
+            $cat->boredom_counter = 0;
+        }
 
         // Update stats with bounds enforcement [0, 100]
         $stats->update([
@@ -76,10 +94,13 @@ class CatEmotionalService
             'happiness' => $this->clamp($newHappiness),
             'affection' => $this->clamp($newAffection),
             'fear' => $this->clamp($newFear),
+            'comfort' => $this->clamp($newComfort),
+            'cleanliness' => $this->clamp($newCleanliness),
         ]);
 
         $cat->update([
             'last_calculated_at' => $now,
+            'boredom_counter' => $cat->boredom_counter,
         ]);
 
         return $cat->fresh(['stats', 'personality', 'customization']);
@@ -102,6 +123,10 @@ class CatEmotionalService
             return 'playing';
         }
 
+        if ($recentAction === 'groom') {
+            return 'grooming';
+        }
+
         $stats = $cat->stats;
         $personality = $cat->personality;
 
@@ -115,6 +140,10 @@ class CatEmotionalService
 
         if ($stats->energy <= 20) {
             return 'sitting'; // Too tired to run
+        }
+
+        if (($stats->cleanliness ?? 90) < 45 && $stats->energy > 25) {
+            return 'grooming';
         }
 
         if ($stats->affection >= 75 && $stats->trust >= 60) {
@@ -283,7 +312,11 @@ class CatEmotionalService
                 $energyCost = 18.0 * ($personality->energy_decay_multiplier ?? 1.0);
                 $happinessBonus = 22.0;
 
-                if ($personality->code === 'playful') {
+                // Boredom handling: playing repeatedly without break reduces effectiveness
+                $isBored = ($cat->last_activity_type === 'play' && $cat->boredom_counter >= 3);
+                if ($isBored) {
+                    $happinessBonus = 8.0;
+                } elseif ($personality->code === 'playful') {
                     $happinessBonus = 30.0;
                 } elseif ($personality->code === 'lazy') {
                     $energyCost = 25.0; // Lazy cats get exhausted faster
@@ -295,6 +328,7 @@ class CatEmotionalService
                 $newHunger = $this->clamp($stats->hunger + 12.0); // Playing makes them hungry
                 $newTrust = $this->clamp($stats->trust + (6.0 * ($personality->trust_gain_multiplier ?? 1.0)));
                 $newFear = $this->clamp($stats->fear - 8.0);
+                $newComfort = $this->clamp(($stats->comfort ?? 85.0) - 5.0);
 
                 $statChanges = [
                     'happiness' => round($newHappiness - $stats->happiness, 1),
@@ -302,6 +336,7 @@ class CatEmotionalService
                     'hunger' => round($newHunger - $stats->hunger, 1),
                     'trust' => round($newTrust - $stats->trust, 1),
                     'fear' => round($newFear - $stats->fear, 1),
+                    'comfort' => round($newComfort - ($stats->comfort ?? 85.0), 1),
                 ];
 
                 $stats->update([
@@ -310,15 +345,22 @@ class CatEmotionalService
                     'hunger' => $newHunger,
                     'trust' => $newTrust,
                     'fear' => $newFear,
+                    'comfort' => $newComfort,
                 ]);
 
                 $cat->update([
                     'last_interaction_at' => Carbon::now(),
                     'last_calculated_at' => Carbon::now(),
+                    'last_activity_type' => 'play',
+                    'boredom_counter' => $cat->boredom_counter + 1,
                 ]);
 
                 $animationState = 'playing';
-                $feedbackMessage = $personality->reaction_dialogues['play'] ?? "{$cat->name} melompat lincah mengejar mainan kesukaannya!";
+                if ($isBored) {
+                    $feedbackMessage = "{$cat->name} mulai lelah mengejar mainan yang sama. Butuh jeda sejenak atau elusan lembut.";
+                } else {
+                    $feedbackMessage = $personality->reaction_dialogues['play'] ?? "{$cat->name} melompat lincah mengejar mainan kesukaannya!";
+                }
                 break;
 
             case 'scold':
@@ -382,16 +424,20 @@ class CatEmotionalService
                     ];
                 }
 
-                $newAffection = $this->clamp($stats->affection + 8.0);
-                $newHappiness = $this->clamp($stats->happiness + 8.0);
-                $newTrust = $this->clamp($stats->trust + 5.0);
-                $newFear = $this->clamp($stats->fear - 5.0);
+                $newAffection = $this->clamp($stats->affection + 10.0);
+                $newHappiness = $this->clamp($stats->happiness + 10.0);
+                $newTrust = $this->clamp($stats->trust + 6.0);
+                $newFear = $this->clamp($stats->fear - 6.0);
+                $newCleanliness = $this->clamp(($stats->cleanliness ?? 90.0) + 25.0);
+                $newComfort = $this->clamp(($stats->comfort ?? 85.0) + 18.0);
 
                 $statChanges = [
                     'affection' => round($newAffection - $stats->affection, 1),
                     'happiness' => round($newHappiness - $stats->happiness, 1),
                     'trust' => round($newTrust - $stats->trust, 1),
                     'fear' => round($newFear - $stats->fear, 1),
+                    'cleanliness' => round($newCleanliness - ($stats->cleanliness ?? 90.0), 1),
+                    'comfort' => round($newComfort - ($stats->comfort ?? 85.0), 1),
                 ];
 
                 $stats->update([
@@ -399,15 +445,94 @@ class CatEmotionalService
                     'happiness' => $newHappiness,
                     'trust' => $newTrust,
                     'fear' => $newFear,
+                    'cleanliness' => $newCleanliness,
+                    'comfort' => $newComfort,
                 ]);
 
                 $cat->update([
                     'last_interaction_at' => Carbon::now(),
                     'last_calculated_at' => Carbon::now(),
+                    'last_activity_type' => 'groom',
+                    'boredom_counter' => 0,
+                ]);
+
+                $animationState = 'grooming';
+                $feedbackMessage = "Bulu {$cat->name} disisir rapi dan bersih berkilau! Dengkurannya terdengar nyaman.";
+                break;
+
+            case 'clean_room':
+                $newCleanliness = $this->clamp(($stats->cleanliness ?? 90.0) + 22.0);
+                $newComfort = $this->clamp(($stats->comfort ?? 85.0) + 25.0);
+                $newHappiness = $this->clamp($stats->happiness + 8.0);
+
+                $statChanges = [
+                    'cleanliness' => round($newCleanliness - ($stats->cleanliness ?? 90.0), 1),
+                    'comfort' => round($newComfort - ($stats->comfort ?? 85.0), 1),
+                    'happiness' => round($newHappiness - $stats->happiness, 1),
+                ];
+
+                $stats->update([
+                    'cleanliness' => $newCleanliness,
+                    'comfort' => $newComfort,
+                    'happiness' => $newHappiness,
+                ]);
+
+                $cat->update([
+                    'last_interaction_at' => Carbon::now(),
+                    'last_calculated_at' => Carbon::now(),
+                    'last_activity_type' => 'clean_room',
+                    'boredom_counter' => 0,
                 ]);
 
                 $animationState = 'happy';
-                $feedbackMessage = "Bulu {$cat->name} disisir rapi hingga berkilau dan nyaman!";
+                $feedbackMessage = "Ruangan dibersihkan hingga wangi dan segar. {$cat->name} merasa sangat tenteram!";
+                break;
+
+            case 'treat':
+                if ($cat->is_sleeping) {
+                    return [
+                        'success' => false,
+                        'message' => "{$cat->name} sedang tidur. Berikan camilan saat ia terbangun.",
+                        'cat' => $this->formatCatResponse($cat, 'sleeping'),
+                    ];
+                }
+
+                $isFavorite = ($itemCode && $itemCode === ($cat->favorite_food ?? 'canned_tuna')) || ($itemCode === 'canned_tuna');
+                $happinessGain = $isFavorite ? 28.0 : 18.0;
+                $affectionGain = $isFavorite ? 14.0 : 9.0;
+                $hungerReduction = 20.0;
+                $comfortGain = 12.0;
+
+                $newHappiness = $this->clamp($stats->happiness + $happinessGain);
+                $newAffection = $this->clamp($stats->affection + $affectionGain);
+                $newHunger = $this->clamp($stats->hunger - $hungerReduction);
+                $newComfort = $this->clamp(($stats->comfort ?? 85.0) + $comfortGain);
+
+                $statChanges = [
+                    'happiness' => round($newHappiness - $stats->happiness, 1),
+                    'affection' => round($newAffection - $stats->affection, 1),
+                    'hunger' => round($newHunger - $stats->hunger, 1),
+                    'comfort' => round($newComfort - ($stats->comfort ?? 85.0), 1),
+                ];
+
+                $stats->update([
+                    'happiness' => $newHappiness,
+                    'affection' => $newAffection,
+                    'hunger' => $newHunger,
+                    'comfort' => $newComfort,
+                ]);
+
+                $cat->update([
+                    'last_interaction_at' => Carbon::now(),
+                    'last_calculated_at' => Carbon::now(),
+                    'last_activity_type' => 'treat',
+                    'boredom_counter' => 0,
+                ]);
+
+                $animationState = 'eating';
+                $feedbackMessage = $isFavorite
+                    ? "Camilan favorit {$cat->name}! Dimakan dengan sangat lahap dan mendengkur puas."
+                    : "Camilan gurih dinikmati {$cat->name} dengan gembira!";
                 break;
 
             default:
@@ -452,6 +577,8 @@ class CatEmotionalService
 
         if ($currentState === 'sleeping') {
             $randomThought = "Zzz... Dengkur halus berirama...";
+        } elseif ($currentState === 'grooming') {
+            $randomThought = "Menjilati bulu dengan teliti... terasa bersih dan rapi.";
         } elseif ($currentState === 'scared') {
             $randomThought = "Tolong jangan menakutiku...";
         } elseif ($currentState === 'angry') {
@@ -466,6 +593,8 @@ class CatEmotionalService
             'gender' => $cat->gender,
             'is_sleeping' => (bool)$cat->is_sleeping,
             'current_room' => $cat->current_room,
+            'favorite_food' => $cat->favorite_food ?? 'canned_tuna',
+            'boredom_counter' => (int)($cat->boredom_counter ?? 0),
             'last_interaction_at' => $cat->last_interaction_at?->toIso8601String(),
             'last_fed_at' => $cat->last_fed_at?->toIso8601String(),
             'last_slept_at' => $cat->last_slept_at?->toIso8601String(),
@@ -485,6 +614,8 @@ class CatEmotionalService
                 'trust' => (float)$cat->stats->trust,
                 'fear' => (float)$cat->stats->fear,
                 'affection' => (float)$cat->stats->affection,
+                'comfort' => (float)($cat->stats->comfort ?? 85.0),
+                'cleanliness' => (float)($cat->stats->cleanliness ?? 90.0),
             ],
             'customization' => [
                 'fur_color' => $cat->customization->fur_color,

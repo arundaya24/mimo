@@ -20,7 +20,7 @@ class InteractionController extends Controller
     public function interact(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'action' => ['required', 'string', 'in:feed,pet,play,scold,sleep,wake,groom,treat'],
+            'action' => ['required', 'string', 'in:feed,pet,play,scold,sleep,wake,groom,clean_room,treat'],
             'item_code' => ['nullable', 'string'],
         ]);
 

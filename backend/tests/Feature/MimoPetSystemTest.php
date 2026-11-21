@@ -151,4 +151,79 @@ class MimoPetSystemTest extends TestCase
         // Sleeping cat energy should have recovered
         $this->assertTrue($syncedCat->stats->energy >= 90.0);
     }
+
+    public function test_user_settings_and_profile_management(): void
+    {
+        $user = User::factory()->create(['name' => 'Original Name', 'password' => bcrypt('password123')]);
+
+        // Get default settings
+        $settingsRes = $this->actingAs($user)->getJson('/api/user/settings');
+        $settingsRes->assertStatus(200)
+            ->assertJsonPath('settings.theme', 'system')
+            ->assertJsonPath('settings.master_volume', 80);
+
+        // Update settings
+        $updateRes = $this->actingAs($user)->putJson('/api/user/settings', [
+            'theme' => 'dark',
+            'accent_color' => 'terracotta',
+            'master_volume' => 95,
+            'ambient_sound' => true,
+        ]);
+        $updateRes->assertStatus(200)
+            ->assertJsonPath('settings.theme', 'dark')
+            ->assertJsonPath('settings.master_volume', 95);
+
+        // Update profile
+        $profileRes = $this->actingAs($user)->putJson('/api/user/profile', [
+            'name' => 'Updated Name',
+            'email' => 'updated@mimo.test',
+        ]);
+        $profileRes->assertStatus(200)
+            ->assertJsonPath('user.name', 'Updated Name');
+
+        // Change password
+        $pwdRes = $this->actingAs($user)->putJson('/api/user/password', [
+            'current_password' => 'password123',
+            'new_password' => 'newsecret123',
+            'new_password_confirmation' => 'newsecret123',
+        ]);
+        $pwdRes->assertStatus(200);
+    }
+
+    public function test_groom_clean_room_and_treat_interactions(): void
+    {
+        $user = User::factory()->create();
+        $this->actingAs($user)->postJson('/api/cat/adopt', [
+            'name' => 'Mimo',
+            'personality_code' => 'playful',
+            'fur_color' => '#E69A57',
+            'pattern' => 'stripes',
+            'eye_color' => '#48BB78',
+        ]);
+
+        // Test Groom
+        $groomRes = $this->actingAs($user)->postJson('/api/cat/interact', [
+            'action' => 'groom',
+        ]);
+        $groomRes->assertStatus(200)
+            ->assertJsonPath('success', true);
+        $this->assertTrue($groomRes->json('cat.stats.cleanliness') > 80);
+
+        // Test Clean Room
+        $cleanRes = $this->actingAs($user)->postJson('/api/cat/interact', [
+            'action' => 'clean_room',
+        ]);
+        $cleanRes->assertStatus(200)
+            ->assertJsonPath('success', true);
+        $this->assertTrue($cleanRes->json('cat.stats.comfort') > 80);
+
+        // Test Treat
+        $treatRes = $this->actingAs($user)->postJson('/api/cat/interact', [
+            'action' => 'treat',
+            'item_code' => 'canned_tuna',
+        ]);
+        $treatRes->assertStatus(200)
+            ->assertJsonPath('success', true);
+        $this->assertEquals('eating', $treatRes->json('cat.current_state'));
+    }
 }

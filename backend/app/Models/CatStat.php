@@ -18,6 +18,8 @@ class CatStat extends Model
         'trust',
         'fear',
         'affection',
+        'comfort',
+        'cleanliness',
     ];
 
     protected $casts = [
@@ -27,6 +29,8 @@ class CatStat extends Model
         'trust' => 'float',
         'fear' => 'float',
         'affection' => 'float',
+        'comfort' => 'float',
+        'cleanliness' => 'float',
     ];
 
     public function cat(): BelongsTo

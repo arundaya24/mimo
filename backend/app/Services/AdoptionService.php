@@ -43,6 +43,10 @@ class AdoptionService
                     ?? CatPersonality::first();
             }
 
+            // Assign random favorite food from popular foods
+            $favoriteFoods = ['canned_tuna', 'dry_kibble', 'cat_treats'];
+            $favoriteFood = $favoriteFoods[array_rand($favoriteFoods)];
+
             // Create Cat
             $cat = Cat::create([
                 'user_id' => $user->id,
@@ -51,6 +55,9 @@ class AdoptionService
                 'personality_id' => $personality->id,
                 'is_sleeping' => false,
                 'current_room' => 'living_room',
+                'favorite_food' => $favoriteFood,
+                'boredom_counter' => 0,
+                'last_activity_type' => null,
                 'last_interaction_at' => Carbon::now(),
                 'last_fed_at' => Carbon::now(),
                 'last_slept_at' => null,
@@ -66,6 +73,8 @@ class AdoptionService
                 'trust' => ($personality->code === 'shy') ? 35.0 : 55.0,
                 'fear' => ($personality->code === 'shy') ? 20.0 : 10.0,
                 'affection' => 60.0,
+                'comfort' => 85.0,
+                'cleanliness' => 90.0,
             ]);
 
             // Create Customization

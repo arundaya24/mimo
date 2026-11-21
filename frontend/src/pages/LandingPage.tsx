@@ -41,29 +41,29 @@ export const LandingPage: React.FC<LandingPageProps> = ({
   };
 
   return (
-    <div className="min-h-[calc(100vh-120px)] flex flex-col justify-between bg-[#F8F6F1]">
+    <div className="min-h-[calc(100vh-120px)] flex flex-col justify-between bg-[#F8F6F1] dark:bg-[#121110] transition-colors">
       
       {/* Hero Section: Asymmetric 2-Column */}
-      <section className="max-w-6xl mx-auto px-4 sm:px-8 pt-10 pb-16 w-full">
+      <section className="max-w-6xl mx-auto px-4 sm:px-8 pt-8 sm:pt-12 pb-16 w-full">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
           
           {/* Left Column: Left-aligned typography with tight tracking */}
           <div className="lg:col-span-7 text-left space-y-6">
             
             {/* System Status Pill */}
-            <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded border border-[#E7E2DA] bg-[#FCFBF8] text-[#5A5046]">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#C75D35]" />
+            <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded border border-[#E7E2DA] dark:border-[#2D2A26] bg-[#FCFBF8] dark:bg-[#181615] text-[#5A5046] dark:text-[#B5ACA1]">
+              <span className="w-1.5 h-1.5 rounded-full bg-[var(--accent)]" />
               <span className="font-mono text-[10px] uppercase tracking-wider font-semibold">
                 SYSTEM CORE // VER 1.0.4
               </span>
             </div>
 
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-[#141311] leading-[1.08]">
+            <h1 className="text-3xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-[#141311] dark:text-[#F6F4EE] leading-[1.08]">
               Virtual pet simulator dengan logika deterministik.
             </h1>
 
-            <p className="text-sm sm:text-base text-[#5A5046] max-w-xl leading-relaxed font-normal">
-              Bukan animasi video statis. MIMO menghitung emosi, kebutuhan energi, dan kepercayaan secara real-time di server. Saat peramban ditutup, siklus metabolisme tetap berjalan konsisten.
+            <p className="text-sm sm:text-base text-[#5A5046] dark:text-[#B5ACA1] max-w-xl leading-relaxed font-normal">
+              Bukan animasi video statis. MIMO menghitung emosi, kebutuhan energi, kebersihan, dan kenyamanan secara real-time di server. Saat peramban ditutup, siklus metabolisme tetap berjalan konsisten.
             </p>
 
             {/* CTA Group with Tactile Press & Shimmer */}
@@ -79,7 +79,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                     onOpenLogin();
                   }
                 }}
-                className="btn-press cta-shimmer px-6 py-3 rounded-lg bg-[#22201D] hover:bg-[#322F2B] text-[#FCFBF8] font-mono text-xs font-semibold tracking-wider uppercase flex items-center justify-center gap-2 border border-[#22201D]"
+                className="btn-press cta-shimmer px-6 py-3 rounded-lg bg-[#22201D] dark:bg-[#F6F4EE] hover:bg-[#322F2B] text-[#FCFBF8] dark:text-[#121110] font-mono text-xs font-semibold tracking-wider uppercase flex items-center justify-center gap-2 border border-[#22201D] dark:border-[#F6F4EE]"
               >
                 <span>{isAuthenticated && hasCat ? 'Buka Ruang Kucing' : 'Adopsi Kucing Baru'}</span>
                 <ArrowRight className="w-4 h-4" />
@@ -91,7 +91,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                     sounds.playClick();
                     onOpenLogin();
                   }}
-                  className="btn-press px-5 py-3 rounded-lg border border-[#E7E2DA] hover:border-[#C8BFB3] bg-[#FCFBF8] text-[#22201D] font-mono text-xs font-semibold tracking-wider uppercase transition-colors"
+                  className="btn-press px-5 py-3 rounded-lg border border-[#E7E2DA] dark:border-[#2D2A26] hover:border-[#C8BFB3] dark:hover:border-[#48433E] bg-[#FCFBF8] dark:bg-[#181615] text-[#22201D] dark:text-[#F6F4EE] font-mono text-xs font-semibold tracking-wider uppercase transition-colors"
                 >
                   Masuk Akun
                 </button>
@@ -99,22 +99,22 @@ export const LandingPage: React.FC<LandingPageProps> = ({
             </div>
 
             {/* Spec Metrics Row */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-4 border-t border-[#E7E2DA]">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-4 border-t border-[#E7E2DA] dark:border-[#2D2A26]">
               <div>
-                <span className="font-mono text-[10px] uppercase text-[#9E9284] block">PARAMETERS</span>
-                <span className="font-mono text-sm font-semibold text-[#141311] tabular-nums">06 STATS</span>
+                <span className="font-mono text-[10px] uppercase text-[#9E9284] dark:text-[#7E756B] block">PARAMETERS</span>
+                <span className="font-mono text-sm font-semibold text-[#141311] dark:text-[#F6F4EE] tabular-nums">08 SENSORS</span>
               </div>
               <div>
-                <span className="font-mono text-[10px] uppercase text-[#9E9284] block">PERSONALITY</span>
-                <span className="font-mono text-sm font-semibold text-[#141311] tabular-nums">05 TYPES</span>
+                <span className="font-mono text-[10px] uppercase text-[#9E9284] dark:text-[#7E756B] block">PERSONALITY</span>
+                <span className="font-mono text-sm font-semibold text-[#141311] dark:text-[#F6F4EE] tabular-nums">05 TYPES</span>
               </div>
               <div>
-                <span className="font-mono text-[10px] uppercase text-[#9E9284] block">ANIMATION</span>
-                <span className="font-mono text-sm font-semibold text-[#141311] tabular-nums">11 STATES</span>
+                <span className="font-mono text-[10px] uppercase text-[#9E9284] dark:text-[#7E756B] block">ANIMATION</span>
+                <span className="font-mono text-sm font-semibold text-[#141311] dark:text-[#F6F4EE] tabular-nums">12 STATES</span>
               </div>
               <div>
-                <span className="font-mono text-[10px] uppercase text-[#9E9284] block">STORAGE</span>
-                <span className="font-mono text-sm font-semibold text-[#141311] tabular-nums">PERSISTENT</span>
+                <span className="font-mono text-[10px] uppercase text-[#9E9284] dark:text-[#7E756B] block">STORAGE</span>
+                <span className="font-mono text-sm font-semibold text-[#141311] dark:text-[#F6F4EE] tabular-nums">PERSISTENT</span>
               </div>
             </div>
 
@@ -122,23 +122,23 @@ export const LandingPage: React.FC<LandingPageProps> = ({
 
           {/* Right Column: Interactive Hardware Panel Preview */}
           <div className="lg:col-span-5 w-full">
-            <div className="bento-card rounded-xl p-5 border border-[#E7E2DA] text-left space-y-4">
+            <div className="bento-card rounded-xl p-5 border border-[#E7E2DA] dark:border-[#2D2A26] bg-[#FCFBF8] dark:bg-[#181615] text-left space-y-4">
               
               {/* Card Header Telemetry */}
-              <div className="flex items-center justify-between pb-3 border-b border-[#E7E2DA]">
+              <div className="flex items-center justify-between pb-3 border-b border-[#E7E2DA] dark:border-[#2D2A26]">
                 <div className="flex items-center gap-2">
                   <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                  <span className="font-mono text-[11px] font-semibold uppercase tracking-wider text-[#22201D]">
+                  <span className="font-mono text-[11px] font-semibold uppercase tracking-wider text-[#22201D] dark:text-[#F6F4EE]">
                     RENDER TESTBENCH
                   </span>
                 </div>
-                <span className="font-mono text-[10px] text-[#756A5E] uppercase">
+                <span className="font-mono text-[10px] text-[#756A5E] dark:text-[#B5ACA1] uppercase">
                   STATE: {demoState}
                 </span>
               </div>
 
               {/* Interactive Vector Cat Frame */}
-              <div className="relative w-full h-64 bg-[#F4F0E8] rounded-lg border border-[#E7E2DA] flex items-center justify-center p-4 overflow-hidden">
+              <div className="relative w-full h-64 bg-[#F4F0E8] dark:bg-[#1E1C1A] rounded-lg border border-[#E7E2DA] dark:border-[#2D2A26] flex items-center justify-center p-4 overflow-hidden">
                 <CatCharacter
                   customization={demoCustomization}
                   state={demoState}
@@ -150,7 +150,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
 
               {/* State Tester Buttons */}
               <div>
-                <span className="font-mono text-[10px] uppercase tracking-wider text-[#9E9284] block mb-2">
+                <span className="font-mono text-[10px] uppercase tracking-wider text-[#9E9284] dark:text-[#7E756B] block mb-2">
                   SELECT BEHAVIORAL STATE
                 </span>
                 <div className="grid grid-cols-4 gap-1.5 font-mono text-[10px]">
@@ -160,8 +160,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                       onClick={() => handleStateSelect(st)}
                       className={`btn-press py-1.5 rounded border text-center uppercase font-semibold transition-colors ${
                         demoState === st
-                          ? 'border-[#C75D35] bg-[#FDF6F2] text-[#C75D35]'
-                          : 'border-[#E7E2DA] bg-[#FCFBF8] text-[#5A5046] hover:border-[#C8BFB3]'
+                          ? 'border-[var(--accent)] bg-[#FDF6F2] dark:bg-[#2A1810] text-[var(--accent)]'
+                          : 'border-[#E7E2DA] dark:border-[#2D2A26] bg-[#FCFBF8] dark:bg-[#181615] text-[#5A5046] dark:text-[#B5ACA1] hover:border-[#C8BFB3]'
                       }`}
                     >
                       {st}
@@ -177,14 +177,14 @@ export const LandingPage: React.FC<LandingPageProps> = ({
       </section>
 
       {/* Bento Grid Architecture Showcase (Strictly Asymmetric, No Generic 3-Column Layout) */}
-      <section className="border-t border-[#E7E2DA] bg-[#FAF8F5] py-16 px-4 sm:px-8">
+      <section className="border-t border-[#E7E2DA] dark:border-[#2D2A26] bg-[#FAF8F5] dark:bg-[#161413] py-16 px-4 sm:px-8">
         <div className="max-w-6xl mx-auto space-y-8">
           
           <div className="text-left max-w-xl">
-            <span className="font-mono text-[11px] font-semibold uppercase tracking-wider text-[#C75D35] block mb-1">
+            <span className="font-mono text-[11px] font-semibold uppercase tracking-wider text-[var(--accent)] block mb-1">
               ARCHITECTURE & SPECIFICATION
             </span>
-            <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-[#141311]">
+            <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-[#141311] dark:text-[#F6F4EE]">
               Sistem backend deterministik tanpa ketergantungan API pihak ketiga.
             </h2>
           </div>
@@ -195,32 +195,32 @@ export const LandingPage: React.FC<LandingPageProps> = ({
             {/* Bento Cell 1 (Span 7 / 12) - State Machine Engine */}
             <div className="md:col-span-7 bento-card p-6 rounded-xl space-y-4">
               <div className="flex items-center justify-between">
-                <span className="font-mono text-[10px] uppercase tracking-wider text-[#9E9284]">
+                <span className="font-mono text-[10px] uppercase tracking-wider text-[#9E9284] dark:text-[#7E756B]">
                   MODULE 01
                 </span>
-                <Activity className="w-4 h-4 text-[#C75D35]" />
+                <Activity className="w-4 h-4 text-[var(--accent)]" />
               </div>
               <div>
-                <h3 className="text-lg font-bold tracking-tight text-[#141311] mb-1.5">
+                <h3 className="text-lg font-bold tracking-tight text-[#141311] dark:text-[#F6F4EE] mb-1.5">
                   Finite State Machine Emosional
                 </h3>
-                <p className="text-xs text-[#5A5046] leading-relaxed">
-                  Perubahan status kucing tidak diacak tanpa dasar. Status dominan dievaluasi secara berjenjang dari ambang batas rasa takut, rasa lapar, cadangan energi, dan tingkat kepercayaan.
+                <p className="text-xs text-[#5A5046] dark:text-[#B5ACA1] leading-relaxed">
+                  Perubahan status kucing tidak diacak tanpa dasar. Status dominan dievaluasi secara berjenjang dari ambang batas rasa takut, rasa lapar, cadangan energi, kebersihan, dan tingkat kepercayaan.
                 </p>
               </div>
 
               {/* State Machine Flowchart Pills */}
               <div className="pt-2 flex flex-wrap gap-2 font-mono text-[10px]">
-                <span className="px-2.5 py-1 rounded border border-[#E7E2DA] bg-[#FCFBF8] text-[#433B33]">
+                <span className="px-2.5 py-1 rounded border border-[#E7E2DA] dark:border-[#2D2A26] bg-[#FCFBF8] dark:bg-[#1E1C1A] text-[#433B33] dark:text-[#B5ACA1]">
                   FEAR &gt; 50 = SCARED / ANGRY
                 </span>
-                <span className="px-2.5 py-1 rounded border border-[#E7E2DA] bg-[#FCFBF8] text-[#433B33]">
+                <span className="px-2.5 py-1 rounded border border-[#E7E2DA] dark:border-[#2D2A26] bg-[#FCFBF8] dark:bg-[#1E1C1A] text-[#433B33] dark:text-[#B5ACA1]">
                   HUNGER &gt; 80 = HANGRY
                 </span>
-                <span className="px-2.5 py-1 rounded border border-[#E7E2DA] bg-[#FCFBF8] text-[#433B33]">
+                <span className="px-2.5 py-1 rounded border border-[#E7E2DA] dark:border-[#2D2A26] bg-[#FCFBF8] dark:bg-[#1E1C1A] text-[#433B33] dark:text-[#B5ACA1]">
                   ENERGY &lt; 20 = EXHAUSTED
                 </span>
-                <span className="px-2.5 py-1 rounded border border-[#E7E2DA] bg-[#FCFBF8] text-[#433B33]">
+                <span className="px-2.5 py-1 rounded border border-[#E7E2DA] dark:border-[#2D2A26] bg-[#FCFBF8] dark:bg-[#1E1C1A] text-[#433B33] dark:text-[#B5ACA1]">
                   AFFECTION &gt; 70 = PURR
                 </span>
               </div>
@@ -229,24 +229,24 @@ export const LandingPage: React.FC<LandingPageProps> = ({
             {/* Bento Cell 2 (Span 5 / 12) - Elapsed-Time Server Calculation */}
             <div className="md:col-span-5 bento-card p-6 rounded-xl space-y-4">
               <div className="flex items-center justify-between">
-                <span className="font-mono text-[10px] uppercase tracking-wider text-[#9E9284]">
+                <span className="font-mono text-[10px] uppercase tracking-wider text-[#9E9284] dark:text-[#7E756B]">
                   MODULE 02
                 </span>
                 <Clock className="w-4 h-4 text-[#B88728]" />
               </div>
               <div>
-                <h3 className="text-lg font-bold tracking-tight text-[#141311] mb-1.5">
+                <h3 className="text-lg font-bold tracking-tight text-[#141311] dark:text-[#F6F4EE] mb-1.5">
                   Elapsed-Time Persistence
                 </h3>
-                <p className="text-xs text-[#5A5046] leading-relaxed">
+                <p className="text-xs text-[#5A5046] dark:text-[#B5ACA1] leading-relaxed">
                   Perhitungan waktu berjalan di layer backend Laravel saat pengguna membuka kembali sesi peramban.
                 </p>
               </div>
 
-              <div className="p-3 rounded bg-[#181614] text-[#E7E2DA] font-mono text-[11px] leading-relaxed">
+              <div className="p-3 rounded bg-[#181614] dark:bg-[#0D0C0B] text-[#E7E2DA] dark:text-[#B5ACA1] font-mono text-[11px] leading-relaxed border border-[#2D2A26]">
                 <code>
                   $hours = diffInMinutes / 60;<br />
-                  $hunger += $hours * 4.0 * $mult;<br />
+                  $hunger += $hours * 3.5 * $mult;<br />
                   $energy += is_sleeping ? +18.0 : -3.5;
                 </code>
               </div>
@@ -255,28 +255,28 @@ export const LandingPage: React.FC<LandingPageProps> = ({
             {/* Bento Cell 3 (Span 5 / 12) - Personality Multipliers */}
             <div className="md:col-span-5 bento-card p-6 rounded-xl space-y-4">
               <div className="flex items-center justify-between">
-                <span className="font-mono text-[10px] uppercase tracking-wider text-[#9E9284]">
+                <span className="font-mono text-[10px] uppercase tracking-wider text-[#9E9284] dark:text-[#7E756B]">
                   MODULE 03
                 </span>
                 <Sliders className="w-4 h-4 text-[#4A7C59]" />
               </div>
               <div>
-                <h3 className="text-lg font-bold tracking-tight text-[#141311] mb-1.5">
+                <h3 className="text-lg font-bold tracking-tight text-[#141311] dark:text-[#F6F4EE] mb-1.5">
                   Pengali Sifat Kepribadian
                 </h3>
-                <p className="text-xs text-[#5A5046] leading-relaxed">
+                <p className="text-xs text-[#5A5046] dark:text-[#B5ACA1] leading-relaxed">
                   5 kepribadian bawaan (Playful, Shy, Lazy, Affectionate, Grumpy) secara matematis mengubah sensitivitas bentakan dan kecepatan membangun trust.
                 </p>
               </div>
 
               <div className="grid grid-cols-2 gap-2 font-mono text-[10px]">
-                <div className="p-2 rounded border border-[#E7E2DA] bg-[#FCFBF8]">
-                  <span className="text-[#9E9284] block">SHY FEAR GAIN</span>
-                  <span className="font-semibold text-[#141311]">1.6x SENSITIVITY</span>
+                <div className="p-2 rounded border border-[#E7E2DA] dark:border-[#2D2A26] bg-[#FCFBF8] dark:bg-[#1E1C1A]">
+                  <span className="text-[#9E9284] dark:text-[#7E756B] block">SHY FEAR GAIN</span>
+                  <span className="font-semibold text-[#141311] dark:text-[#F6F4EE]">1.6x SENSITIVITY</span>
                 </div>
-                <div className="p-2 rounded border border-[#E7E2DA] bg-[#FCFBF8]">
-                  <span className="text-[#9E9284] block">LAZY ENERGY DRAIN</span>
-                  <span className="font-semibold text-[#141311]">0.7x DECAY</span>
+                <div className="p-2 rounded border border-[#E7E2DA] dark:border-[#2D2A26] bg-[#FCFBF8] dark:bg-[#1E1C1A]">
+                  <span className="text-[#9E9284] dark:text-[#7E756B] block">LAZY ENERGY DRAIN</span>
+                  <span className="font-semibold text-[#141311] dark:text-[#F6F4EE]">0.7x DECAY</span>
                 </div>
               </div>
             </div>
@@ -284,24 +284,24 @@ export const LandingPage: React.FC<LandingPageProps> = ({
             {/* Bento Cell 4 (Span 7 / 12) - Vector SVG Component System */}
             <div className="md:col-span-7 bento-card p-6 rounded-xl space-y-4">
               <div className="flex items-center justify-between">
-                <span className="font-mono text-[10px] uppercase tracking-wider text-[#9E9284]">
+                <span className="font-mono text-[10px] uppercase tracking-wider text-[#9E9284] dark:text-[#7E756B]">
                   MODULE 04
                 </span>
-                <Cpu className="w-4 h-4 text-[#756A5E]" />
+                <Cpu className="w-4 h-4 text-[#756A5E] dark:text-[#B5ACA1]" />
               </div>
               <div>
-                <h3 className="text-lg font-bold tracking-tight text-[#141311] mb-1.5">
+                <h3 className="text-lg font-bold tracking-tight text-[#141311] dark:text-[#F6F4EE] mb-1.5">
                   Arsitektur Vektor SVG Dinamis
                 </h3>
-                <p className="text-xs text-[#5A5046] leading-relaxed">
-                  Karakter dirender via komponen SVG modular terpisah: lapisan tubuh, corak mantel (stripes, tuxedo, calico), morfolgi telinga, pigmen iris, dan perhiasan kerah kalung.
+                <p className="text-xs text-[#5A5046] dark:text-[#B5ACA1] leading-relaxed">
+                  Karakter dirender via komponen SVG modular terpisah: lapisan tubuh, corak mantel (stripes, tuxedo, calico), morfologi telinga, pigmen iris, dan perhiasan kerah kalung.
                 </p>
               </div>
 
-              <div className="flex items-center gap-3 font-mono text-[10px] text-[#5A5046] pt-1">
-                <span className="px-2 py-1 rounded bg-[#F1EDE5] border border-[#E7E2DA]">SCALE INDEPENDENT</span>
-                <span className="px-2 py-1 rounded bg-[#F1EDE5] border border-[#E7E2DA]">0 BITMAP ASSETS</span>
-                <span className="px-2 py-1 rounded bg-[#F1EDE5] border border-[#E7E2DA]">FRAMER MOTION</span>
+              <div className="flex flex-wrap items-center gap-2 font-mono text-[10px] text-[#5A5046] dark:text-[#B5ACA1] pt-1">
+                <span className="px-2 py-1 rounded bg-[#F1EDE5] dark:bg-[#262320] border border-[#E7E2DA] dark:border-[#2D2A26]">SCALE INDEPENDENT</span>
+                <span className="px-2 py-1 rounded bg-[#F1EDE5] dark:bg-[#262320] border border-[#E7E2DA] dark:border-[#2D2A26]">0 BITMAP ASSETS</span>
+                <span className="px-2 py-1 rounded bg-[#F1EDE5] dark:bg-[#262320] border border-[#E7E2DA] dark:border-[#2D2A26]">FRAMER MOTION</span>
               </div>
             </div>
 

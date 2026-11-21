@@ -1,7 +1,7 @@
 import React from 'react';
 import { CatCustomization, EarStyle, PatternType, AccessoryType } from '../../types/pet';
 import { sounds } from '../../audio/soundSynth';
-import { Check, SlidersHorizontal, Bell } from 'lucide-react';
+import { Check } from 'lucide-react';
 
 interface CatCustomizerProps {
   customization: CatCustomization;
@@ -68,10 +68,10 @@ export const CatCustomizer: React.FC<CatCustomizerProps> = ({ customization, onC
       {/* 1. Base Fur Color */}
       <div>
         <div className="flex items-center justify-between mb-2">
-          <label className="font-mono text-[11px] font-semibold uppercase tracking-wider text-[#756A5E]">
+          <label className="font-mono text-[11px] font-semibold uppercase tracking-wider text-[#756A5E] dark:text-[#B5ACA1]">
             01 / WARNA BULU DASAR
           </label>
-          <span className="font-mono text-[10px] text-[#9E9284]">
+          <span className="font-mono text-[10px] text-[#9E9284] dark:text-[#7E756B]">
             HEX: {customization.fur_color}
           </span>
         </div>
@@ -85,18 +85,18 @@ export const CatCustomizer: React.FC<CatCustomizerProps> = ({ customization, onC
                 onClick={() => update({ fur_color: fur.value, fur_secondary_color: fur.secondary })}
                 className={`btn-press p-2.5 rounded-lg border text-left flex items-center gap-2.5 transition-colors ${
                   isSelected
-                    ? 'border-[#C75D35] bg-[#FDF6F2]'
-                    : 'border-[#E7E2DA] bg-[#FCFBF8] hover:border-[#C8BFB3]'
+                    ? 'border-[var(--accent)] bg-[#FDF6F2] dark:bg-[#2A1810]'
+                    : 'border-[#E7E2DA] dark:border-[#2D2A26] bg-[#FCFBF8] dark:bg-[#181615] hover:border-[#C8BFB3] dark:hover:border-[#48433E]'
                 }`}
               >
                 <div
-                  className="w-5 h-5 rounded border border-[#22201D]/15 shrink-0"
+                  className="w-5 h-5 rounded border border-[#22201D]/15 dark:border-white/20 shrink-0"
                   style={{ backgroundColor: fur.value }}
                 />
-                <span className="text-xs font-medium text-[#22201D] truncate">
+                <span className="text-xs font-medium text-[#22201D] dark:text-[#F6F4EE] truncate">
                   {fur.label}
                 </span>
-                {isSelected && <Check className="w-3.5 h-3.5 text-[#C75D35] ml-auto shrink-0" />}
+                {isSelected && <Check className="w-3.5 h-3.5 text-[var(--accent)] ml-auto shrink-0" />}
               </button>
             );
           })}
@@ -105,7 +105,7 @@ export const CatCustomizer: React.FC<CatCustomizerProps> = ({ customization, onC
 
       {/* 2. Coat Pattern */}
       <div>
-        <label className="block font-mono text-[11px] font-semibold uppercase tracking-wider text-[#756A5E] mb-2">
+        <label className="block font-mono text-[11px] font-semibold uppercase tracking-wider text-[#756A5E] dark:text-[#B5ACA1] mb-2">
           02 / POLA BULU
         </label>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
@@ -118,35 +118,30 @@ export const CatCustomizer: React.FC<CatCustomizerProps> = ({ customization, onC
                 onClick={() => update({ pattern: p.value })}
                 className={`btn-press p-2.5 rounded-lg border text-left flex items-center justify-between transition-colors ${
                   isSelected
-                    ? 'border-[#C75D35] bg-[#FDF6F2]'
-                    : 'border-[#E7E2DA] bg-[#FCFBF8] hover:border-[#C8BFB3]'
+                    ? 'border-[var(--accent)] bg-[#FDF6F2] dark:bg-[#2A1810]'
+                    : 'border-[#E7E2DA] dark:border-[#2D2A26] bg-[#FCFBF8] dark:bg-[#181615] hover:border-[#C8BFB3] dark:hover:border-[#48433E]'
                 }`}
               >
                 <div>
-                  <span className="font-mono text-[10px] text-[#9E9284] block leading-none mb-1">
+                  <span className="font-mono text-[10px] text-[#9E9284] dark:text-[#7E756B] block">
                     {p.code}
                   </span>
-                  <span className="text-xs font-medium text-[#22201D]">
+                  <span className="text-xs font-medium text-[#22201D] dark:text-[#F6F4EE]">
                     {p.label}
                   </span>
                 </div>
-                {isSelected && <Check className="w-3.5 h-3.5 text-[#C75D35] shrink-0" />}
+                {isSelected && <Check className="w-3.5 h-3.5 text-[var(--accent)] shrink-0" />}
               </button>
             );
           })}
         </div>
       </div>
 
-      {/* 3. Eye Pigment */}
+      {/* 3. Eye Color */}
       <div>
-        <div className="flex items-center justify-between mb-2">
-          <label className="font-mono text-[11px] font-semibold uppercase tracking-wider text-[#756A5E]">
-            03 / PIGMEN MATA
-          </label>
-          <span className="font-mono text-[10px] text-[#9E9284]">
-            HEX: {customization.eye_color}
-          </span>
-        </div>
+        <label className="block font-mono text-[11px] font-semibold uppercase tracking-wider text-[#756A5E] dark:text-[#B5ACA1] mb-2">
+          03 / WARNA MATA
+        </label>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
           {EYE_COLORS.map((eye) => {
             const isSelected = customization.eye_color === eye.value;
@@ -157,28 +152,28 @@ export const CatCustomizer: React.FC<CatCustomizerProps> = ({ customization, onC
                 onClick={() => update({ eye_color: eye.value })}
                 className={`btn-press p-2.5 rounded-lg border text-left flex items-center gap-2.5 transition-colors ${
                   isSelected
-                    ? 'border-[#C75D35] bg-[#FDF6F2]'
-                    : 'border-[#E7E2DA] bg-[#FCFBF8] hover:border-[#C8BFB3]'
+                    ? 'border-[var(--accent)] bg-[#FDF6F2] dark:bg-[#2A1810]'
+                    : 'border-[#E7E2DA] dark:border-[#2D2A26] bg-[#FCFBF8] dark:bg-[#181615] hover:border-[#C8BFB3] dark:hover:border-[#48433E]'
                 }`}
               >
                 <div
-                  className="w-4 h-4 rounded-full border border-black/15 shrink-0"
+                  className="w-4 h-4 rounded-full border border-[#22201D]/20 dark:border-white/20 shrink-0"
                   style={{ backgroundColor: eye.value }}
                 />
-                <span className="text-xs font-medium text-[#22201D] truncate">
+                <span className="text-xs font-medium text-[#22201D] dark:text-[#F6F4EE] truncate">
                   {eye.label}
                 </span>
-                {isSelected && <Check className="w-3.5 h-3.5 text-[#C75D35] ml-auto shrink-0" />}
+                {isSelected && <Check className="w-3.5 h-3.5 text-[var(--accent)] ml-auto shrink-0" />}
               </button>
             );
           })}
         </div>
       </div>
 
-      {/* 4. Ear Morphology */}
+      {/* 4. Ear Style */}
       <div>
-        <label className="block font-mono text-[11px] font-semibold uppercase tracking-wider text-[#756A5E] mb-2">
-          04 / MORFOLOGI TELINGA
+        <label className="block font-mono text-[11px] font-semibold uppercase tracking-wider text-[#756A5E] dark:text-[#B5ACA1] mb-2">
+          04 / BENTUK TELINGA
         </label>
         <div className="grid grid-cols-3 gap-2">
           {EAR_STYLES.map((ear) => {
@@ -190,41 +185,30 @@ export const CatCustomizer: React.FC<CatCustomizerProps> = ({ customization, onC
                 onClick={() => update({ ear_style: ear.value })}
                 className={`btn-press p-2.5 rounded-lg border text-left flex items-center justify-between transition-colors ${
                   isSelected
-                    ? 'border-[#C75D35] bg-[#FDF6F2]'
-                    : 'border-[#E7E2DA] bg-[#FCFBF8] hover:border-[#C8BFB3]'
+                    ? 'border-[var(--accent)] bg-[#FDF6F2] dark:bg-[#2A1810]'
+                    : 'border-[#E7E2DA] dark:border-[#2D2A26] bg-[#FCFBF8] dark:bg-[#181615] hover:border-[#C8BFB3] dark:hover:border-[#48433E]'
                 }`}
               >
                 <div>
-                  <span className="font-mono text-[10px] text-[#9E9284] block leading-none mb-1">
+                  <span className="font-mono text-[10px] text-[#9E9284] dark:text-[#7E756B] block">
                     {ear.code}
                   </span>
-                  <span className="text-xs font-medium text-[#22201D]">
+                  <span className="text-xs font-medium text-[#22201D] dark:text-[#F6F4EE]">
                     {ear.label}
                   </span>
                 </div>
-                {isSelected && <Check className="w-3.5 h-3.5 text-[#C75D35] shrink-0" />}
+                {isSelected && <Check className="w-3.5 h-3.5 text-[var(--accent)] shrink-0" />}
               </button>
             );
           })}
         </div>
       </div>
 
-      {/* 5. Collar & Bell Hardware */}
-      <div>
-        <div className="flex items-center justify-between mb-2">
-          <label className="font-mono text-[11px] font-semibold uppercase tracking-wider text-[#756A5E]">
-            05 / KALUNG & LONCENG
-          </label>
-          <label className="flex items-center gap-1.5 font-mono text-[11px] text-[#47433E] cursor-pointer">
-            <input
-              type="checkbox"
-              checked={customization.bell}
-              onChange={(e) => update({ bell: e.target.checked })}
-              className="rounded border-[#E7E2DA] text-[#C75D35] focus:ring-[#C75D35] w-3.5 h-3.5"
-            />
-            <span>LONCENG AKTIF</span>
-          </label>
-        </div>
+      {/* 5. Collar & Bell */}
+      <div className="space-y-3">
+        <label className="block font-mono text-[11px] font-semibold uppercase tracking-wider text-[#756A5E] dark:text-[#B5ACA1]">
+          05 / AKSESORI KALUNG & LONCENG
+        </label>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
           {COLLAR_COLORS.map((col) => {
             const isSelected = customization.collar_color === col.value;
@@ -235,31 +219,56 @@ export const CatCustomizer: React.FC<CatCustomizerProps> = ({ customization, onC
                 onClick={() => update({ collar_color: col.value })}
                 className={`btn-press p-2 rounded-lg border text-left flex items-center gap-2 transition-colors ${
                   isSelected
-                    ? 'border-[#C75D35] bg-[#FDF6F2]'
-                    : 'border-[#E7E2DA] bg-[#FCFBF8] hover:border-[#C8BFB3]'
+                    ? 'border-[var(--accent)] bg-[#FDF6F2] dark:bg-[#2A1810]'
+                    : 'border-[#E7E2DA] dark:border-[#2D2A26] bg-[#FCFBF8] dark:bg-[#181615] hover:border-[#C8BFB3] dark:hover:border-[#48433E]'
                 }`}
               >
                 {col.value !== 'none' ? (
                   <div
-                    className="w-3.5 h-3.5 rounded-full border border-black/15 shrink-0"
+                    className="w-3.5 h-3.5 rounded-full shrink-0 border border-black/10 dark:border-white/10"
                     style={{ backgroundColor: col.value }}
                   />
                 ) : (
-                  <div className="w-3.5 h-3.5 rounded-full border border-[#9E9284] border-dashed shrink-0" />
+                  <div className="w-3.5 h-3.5 rounded-full border border-dashed border-[#756A5E] shrink-0" />
                 )}
-                <span className="text-xs font-medium text-[#22201D] truncate">
+                <span className="text-xs font-medium text-[#22201D] dark:text-[#F6F4EE] truncate">
                   {col.label}
                 </span>
+                {isSelected && <Check className="w-3 h-3 text-[var(--accent)] ml-auto shrink-0" />}
               </button>
             );
           })}
         </div>
+
+        {/* Bell Toggle */}
+        {customization.collar_color !== 'none' && (
+          <div className="pt-1">
+            <button
+              type="button"
+              onClick={() => update({ bell: !customization.bell })}
+              className={`btn-press flex items-center justify-between w-full p-2.5 rounded-lg border transition-colors ${
+                customization.bell
+                  ? 'border-[var(--accent)] bg-[#FDF6F2] dark:bg-[#2A1810]'
+                  : 'border-[#E7E2DA] dark:border-[#2D2A26] bg-[#FCFBF8] dark:bg-[#181615]'
+              }`}
+            >
+              <div className="flex items-center gap-2">
+                <span className="font-mono text-xs font-medium text-[#22201D] dark:text-[#F6F4EE]">
+                  LONCENG EMAS (BELL)
+                </span>
+              </div>
+              <span className={`font-mono text-xs font-bold ${customization.bell ? 'text-[var(--accent)]' : 'text-[#756A5E] dark:text-[#7E756B]'}`}>
+                {customization.bell ? 'ENABLED' : 'DISABLED'}
+              </span>
+            </button>
+          </div>
+        )}
       </div>
 
-      {/* 6. Accessories */}
+      {/* 6. Special Accessories */}
       <div>
-        <label className="block font-mono text-[11px] font-semibold uppercase tracking-wider text-[#756A5E] mb-2">
-          06 / AKSESORI
+        <label className="block font-mono text-[11px] font-semibold uppercase tracking-wider text-[#756A5E] dark:text-[#B5ACA1] mb-2">
+          06 / AKSESORI SPESIAL
         </label>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
           {ACCESSORIES.map((acc) => {
@@ -271,19 +280,19 @@ export const CatCustomizer: React.FC<CatCustomizerProps> = ({ customization, onC
                 onClick={() => update({ accessory: acc.value })}
                 className={`btn-press p-2.5 rounded-lg border text-left flex items-center justify-between transition-colors ${
                   isSelected
-                    ? 'border-[#C75D35] bg-[#FDF6F2]'
-                    : 'border-[#E7E2DA] bg-[#FCFBF8] hover:border-[#C8BFB3]'
+                    ? 'border-[var(--accent)] bg-[#FDF6F2] dark:bg-[#2A1810]'
+                    : 'border-[#E7E2DA] dark:border-[#2D2A26] bg-[#FCFBF8] dark:bg-[#181615] hover:border-[#C8BFB3] dark:hover:border-[#48433E]'
                 }`}
               >
                 <div>
-                  <span className="font-mono text-[10px] text-[#9E9284] block leading-none mb-1">
+                  <span className="font-mono text-[10px] text-[#9E9284] dark:text-[#7E756B] block">
                     {acc.code}
                   </span>
-                  <span className="text-xs font-medium text-[#22201D]">
+                  <span className="text-xs font-medium text-[#22201D] dark:text-[#F6F4EE]">
                     {acc.label}
                   </span>
                 </div>
-                {isSelected && <Check className="w-3.5 h-3.5 text-[#C75D35] shrink-0" />}
+                {isSelected && <Check className="w-3.5 h-3.5 text-[var(--accent)] shrink-0" />}
               </button>
             );
           })}

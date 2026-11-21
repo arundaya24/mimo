@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CatCustomization, PetState } from '../../types/pet';
 
@@ -19,6 +19,16 @@ export const CatCharacter: React.FC<CatCharacterProps> = ({
   size = 'lg',
   showShadow = true,
 }) => {
+  const [isBlinking, setIsBlinking] = useState(false);
+
+  useEffect(() => {
+    if (state === 'sleeping') return;
+    const interval = setInterval(() => {
+      setIsBlinking(true);
+      setTimeout(() => setIsBlinking(false), 160);
+    }, 3800 + Math.random() * 2500);
+    return () => clearInterval(interval);
+  }, [state]);
   const {
     fur_color = '#E69A57',
     fur_secondary_color = '#FFF8F0',
@@ -89,6 +99,11 @@ export const CatCharacter: React.FC<CatCharacterProps> = ({
       y: [0, -5, 0],
       transition: { duration: 2.8, repeat: Infinity, ease: 'easeInOut' },
     },
+    grooming: {
+      y: [0, -3, 0],
+      rotate: [-1, 2, -1],
+      transition: { duration: 1.2, repeat: Infinity, ease: 'easeInOut' },
+    },
     affectionate: {
       y: [0, -4, 0],
       rotate: [-2, 3, -2],
@@ -123,6 +138,10 @@ export const CatCharacter: React.FC<CatCharacterProps> = ({
       rotate: -5,
       transition: { duration: 1 },
     },
+    grooming: {
+      rotate: [0, 8, 0],
+      transition: { duration: 2.2, repeat: Infinity, ease: 'easeInOut' },
+    },
     affectionate: {
       rotate: [0, 16, 0],
       transition: { duration: 2, repeat: Infinity, ease: 'easeInOut' },
@@ -130,6 +149,7 @@ export const CatCharacter: React.FC<CatCharacterProps> = ({
   };
 
   const isSleeping = state === 'sleeping';
+  const isGrooming = state === 'grooming';
   const isScared = state === 'scared';
   const isAngry = state === 'angry';
   const isCurious = state === 'curious';
@@ -477,11 +497,11 @@ export const CatCharacter: React.FC<CatCharacterProps> = ({
 
           {/* ================= 4. EYES ================= */}
           <g id="eyes">
-            {isSleeping ? (
-              // Sleeping peaceful eyes (^  ^)
+            {isSleeping || isGrooming || (isBlinking && !isAngry && !isScared) ? (
+              // Sleeping / Grooming / Blinking peaceful eyes (^  ^)
               <g stroke="#3C3229" strokeWidth="3.5" strokeLinecap="round" fill="none">
-                <path d="M 94 104 Q 102 112 110 104" />
-                <path d="M 130 104 Q 138 112 146 104" />
+                <path d="M 94 104 Q 102 110 110 104" />
+                <path d="M 130 104 Q 138 110 146 104" />
               </g>
             ) : isHappy ? (
               // Joyful squinting eyes

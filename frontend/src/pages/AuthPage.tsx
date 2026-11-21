@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { authService } from '../services/authService';
 import { User } from '../types/pet';
 import { sounds } from '../audio/soundSynth';
-import { ArrowLeft, Lock, Mail, User as UserIcon, Check } from 'lucide-react';
+import { ArrowLeft, Lock, Mail, User as UserIcon } from 'lucide-react';
 
 interface AuthPageProps {
   onSuccess: (user: User, hasCat: boolean) => void;
@@ -43,8 +43,8 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onSuccess, onBack }) => {
   };
 
   return (
-    <div className="min-h-[calc(100vh-140px)] flex items-center justify-center p-4 bg-[#F8F6F1]">
-      <div className="w-full max-w-sm bento-card rounded-xl p-6 sm:p-7 border border-[#E7E2DA] text-left space-y-6">
+    <div className="min-h-[calc(100vh-140px)] flex items-center justify-center p-4 bg-[#F8F6F1] dark:bg-[#121110] transition-colors">
+      <div className="w-full max-w-sm bento-card rounded-xl p-6 sm:p-7 border border-[#E7E2DA] dark:border-[#2D2A26] bg-[#FCFBF8] dark:bg-[#181615] text-left space-y-6">
         
         {/* Back navigation */}
         <button
@@ -52,7 +52,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onSuccess, onBack }) => {
             sounds.playClick();
             onBack();
           }}
-          className="btn-press flex items-center gap-1.5 font-mono text-[11px] text-[#756A5E] hover:text-[#22201D] transition-colors"
+          className="btn-press flex items-center gap-1.5 font-mono text-[11px] text-[#756A5E] dark:text-[#B5ACA1] hover:text-[#22201D] dark:hover:text-[#F6F4EE] transition-colors"
         >
           <ArrowLeft className="w-3.5 h-3.5" />
           <span>KEMBALI KE BERANDA</span>
@@ -61,14 +61,14 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onSuccess, onBack }) => {
         {/* Header */}
         <div>
           <div className="flex items-center gap-2 mb-2">
-            <span className="font-mono text-[10px] uppercase tracking-wider text-[#C75D35] bg-[#FDF6F2] px-2 py-0.5 rounded border border-[#EBCBBD]">
+            <span className="font-mono text-[10px] uppercase tracking-wider text-[var(--accent)] bg-[#FDF6F2] dark:bg-[#2A1810] px-2 py-0.5 rounded border border-[#EBCBBD] dark:border-[#522918]">
               {isRegister ? 'REGISTRATION' : 'AUTHENTICATION'}
             </span>
           </div>
-          <h2 className="text-2xl font-bold tracking-tight text-[#141311]">
+          <h2 className="text-2xl font-bold tracking-tight text-[#141311] dark:text-[#F6F4EE]">
             {isRegister ? 'Daftar Akun Baru' : 'Masuk ke Sistem'}
           </h2>
-          <p className="text-xs text-[#756A5E] mt-1">
+          <p className="text-xs text-[#756A5E] dark:text-[#B5ACA1] mt-1">
             {isRegister
               ? 'Inisialisasi profil operator untuk memelihara kucing digital.'
               : 'Gunakan kredensial yang terdaftar untuk melanjutkan.'}
@@ -76,7 +76,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onSuccess, onBack }) => {
         </div>
 
         {/* Tab Switcher */}
-        <div className="grid grid-cols-2 p-0.5 rounded-lg border border-[#E7E2DA] bg-[#F8F6F1] font-mono text-[11px]">
+        <div className="grid grid-cols-2 p-0.5 rounded-lg border border-[#E7E2DA] dark:border-[#2D2A26] bg-[#F8F6F1] dark:bg-[#1E1C1A] font-mono text-[11px]">
           <button
             type="button"
             onClick={() => {
@@ -86,8 +86,8 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onSuccess, onBack }) => {
             }}
             className={`btn-press py-1.5 rounded-md font-semibold transition-colors ${
               !isRegister
-                ? 'bg-[#FCFBF8] text-[#22201D] border border-[#E7E2DA]'
-                : 'text-[#756A5E] hover:text-[#22201D]'
+                ? 'bg-[#FCFBF8] dark:bg-[#181615] text-[#22201D] dark:text-[#F6F4EE] border border-[#E7E2DA] dark:border-[#2D2A26]'
+                : 'text-[#756A5E] dark:text-[#B5ACA1] hover:text-[#22201D] dark:hover:text-[#F6F4EE]'
             }`}
           >
             LOGIN
@@ -101,8 +101,8 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onSuccess, onBack }) => {
             }}
             className={`btn-press py-1.5 rounded-md font-semibold transition-colors ${
               isRegister
-                ? 'bg-[#FCFBF8] text-[#22201D] border border-[#E7E2DA]'
-                : 'text-[#756A5E] hover:text-[#22201D]'
+                ? 'bg-[#FCFBF8] dark:bg-[#181615] text-[#22201D] dark:text-[#F6F4EE] border border-[#E7E2DA] dark:border-[#2D2A26]'
+                : 'text-[#756A5E] dark:text-[#B5ACA1] hover:text-[#22201D] dark:hover:text-[#F6F4EE]'
             }`}
           >
             REGISTER
@@ -111,7 +111,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onSuccess, onBack }) => {
 
         {/* Error Alert */}
         {error && (
-          <div className="p-3 rounded-md bg-[#FBF2F0] border border-[#ECC4BD] text-[#A84534] font-mono text-[11px]">
+          <div className="p-3 rounded-md bg-[#FBF2F0] dark:bg-[#2D1217] border border-[#ECC4BD] dark:border-[#5C232E] text-[#A84534] dark:text-[#F43F5E] font-mono text-[11px]">
             {error}
           </div>
         )}
@@ -120,53 +120,53 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onSuccess, onBack }) => {
         <form onSubmit={handleSubmit} className="space-y-4">
           {isRegister && (
             <div>
-              <label className="block font-mono text-[10px] font-semibold uppercase tracking-wider text-[#756A5E] mb-1.5">
+              <label className="block font-mono text-[10px] font-semibold uppercase tracking-wider text-[#756A5E] dark:text-[#B5ACA1] mb-1.5">
                 NAMA PEMILIK
               </label>
               <div className="relative">
-                <UserIcon className="w-4 h-4 text-[#9E9284] absolute left-3 top-2.5" />
+                <UserIcon className="w-4 h-4 text-[#9E9284] dark:text-[#7E756B] absolute left-3 top-2.5" />
                 <input
                   type="text"
                   required
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="Kalingga"
-                  className="w-full pl-9 pr-3 py-2 rounded-lg bg-[#FAF8F5] border border-[#E7E2DA] focus:outline-none focus:border-[#C75D35] text-xs text-[#22201D]"
+                  className="w-full pl-9 pr-3 py-2 rounded-lg bg-[#FAF8F5] dark:bg-[#1E1C1A] border border-[#E7E2DA] dark:border-[#2D2A26] focus:outline-hidden focus:border-[var(--accent)] text-xs text-[#22201D] dark:text-[#F6F4EE]"
                 />
               </div>
             </div>
           )}
 
           <div>
-            <label className="block font-mono text-[10px] font-semibold uppercase tracking-wider text-[#756A5E] mb-1.5">
+            <label className="block font-mono text-[10px] font-semibold uppercase tracking-wider text-[#756A5E] dark:text-[#B5ACA1] mb-1.5">
               ALAMAT EMAIL
             </label>
             <div className="relative">
-              <Mail className="w-4 h-4 text-[#9E9284] absolute left-3 top-2.5" />
+              <Mail className="w-4 h-4 text-[#9E9284] dark:text-[#7E756B] absolute left-3 top-2.5" />
               <input
                 type="email"
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="operator@mimo.test"
-                className="w-full pl-9 pr-3 py-2 rounded-lg bg-[#FAF8F5] border border-[#E7E2DA] focus:outline-none focus:border-[#C75D35] text-xs text-[#22201D]"
+                className="w-full pl-9 pr-3 py-2 rounded-lg bg-[#FAF8F5] dark:bg-[#1E1C1A] border border-[#E7E2DA] dark:border-[#2D2A26] focus:outline-hidden focus:border-[var(--accent)] text-xs text-[#22201D] dark:text-[#F6F4EE]"
               />
             </div>
           </div>
 
           <div>
-            <label className="block font-mono text-[10px] font-semibold uppercase tracking-wider text-[#756A5E] mb-1.5">
+            <label className="block font-mono text-[10px] font-semibold uppercase tracking-wider text-[#756A5E] dark:text-[#B5ACA1] mb-1.5">
               KATA SANDI
             </label>
             <div className="relative">
-              <Lock className="w-4 h-4 text-[#9E9284] absolute left-3 top-2.5" />
+              <Lock className="w-4 h-4 text-[#9E9284] dark:text-[#7E756B] absolute left-3 top-2.5" />
               <input
                 type="password"
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Minimal 6 karakter"
-                className="w-full pl-9 pr-3 py-2 rounded-lg bg-[#FAF8F5] border border-[#E7E2DA] focus:outline-none focus:border-[#C75D35] text-xs text-[#22201D]"
+                className="w-full pl-9 pr-3 py-2 rounded-lg bg-[#FAF8F5] dark:bg-[#1E1C1A] border border-[#E7E2DA] dark:border-[#2D2A26] focus:outline-hidden focus:border-[var(--accent)] text-xs text-[#22201D] dark:text-[#F6F4EE]"
               />
             </div>
           </div>
@@ -174,7 +174,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onSuccess, onBack }) => {
           <button
             type="submit"
             disabled={loading}
-            className="btn-press cta-shimmer w-full mt-2 py-2.5 rounded-lg bg-[#22201D] hover:bg-[#322F2B] disabled:opacity-60 text-[#FCFBF8] font-mono text-xs font-semibold tracking-wider uppercase flex items-center justify-center gap-2 border border-[#22201D]"
+            className="btn-press cta-shimmer w-full mt-2 py-2.5 rounded-lg bg-[#22201D] dark:bg-[#F6F4EE] hover:bg-[#322F2B] disabled:opacity-60 text-[#FCFBF8] dark:text-[#121110] font-mono text-xs font-semibold tracking-wider uppercase flex items-center justify-center gap-2 border border-[#22201D] dark:border-[#F6F4EE]"
           >
             {loading ? (
               <span>MEMPROSES...</span>
@@ -186,7 +186,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onSuccess, onBack }) => {
           </button>
         </form>
 
-        <div className="pt-2 border-t border-[#E7E2DA] text-center font-mono text-[10px] text-[#9E9284]">
+        <div className="pt-2 border-t border-[#E7E2DA] dark:border-[#2D2A26] text-center font-mono text-[10px] text-[#9E9284] dark:text-[#7E756B]">
           DATA ENKRIPSI TOKEN SANCTUM 256-BIT
         </div>
       </div>

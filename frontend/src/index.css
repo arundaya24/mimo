@@ -2,11 +2,99 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --bg-primary: #F8F6F1;
+  --bg-card: #FCFBF8;
+  --bg-subtle: #FAF8F5;
+  --bg-elevated: #F1EDE5;
+  --text-primary: #22201D;
+  --text-secondary: #5A5046;
+  --text-muted: #9E9284;
+  --border-color: #E7E2DA;
+  --border-hover: #C8BFB3;
+  --border-dark: #22201D;
+  --accent: #C75D35;
+  --accent-rgb: 199, 93, 53;
+}
+
+.dark {
+  --bg-primary: #121110;
+  --bg-card: #181615;
+  --bg-subtle: #1E1C1A;
+  --bg-elevated: #262320;
+  --text-primary: #F6F4EE;
+  --text-secondary: #B5ACA1;
+  --text-muted: #7E756B;
+  --border-color: #2D2A26;
+  --border-hover: #48433E;
+  --border-dark: #F6F4EE;
+  --accent: #D76C43;
+  --accent-rgb: 215, 108, 67;
+}
+
+/* Accent Themes */
+[data-accent="terracotta"] {
+  --accent: #C75D35;
+  --accent-rgb: 199, 93, 53;
+}
+.dark[data-accent="terracotta"] {
+  --accent: #D76C43;
+  --accent-rgb: 215, 108, 67;
+}
+
+[data-accent="sage"] {
+  --accent: #4A7C59;
+  --accent-rgb: 74, 124, 89;
+}
+.dark[data-accent="sage"] {
+  --accent: #5B946D;
+  --accent-rgb: 91, 148, 109;
+}
+
+[data-accent="amber"] {
+  --accent: #D97706;
+  --accent-rgb: 217, 119, 6;
+}
+.dark[data-accent="amber"] {
+  --accent: #F59E0B;
+  --accent-rgb: 245, 158, 11;
+}
+
+[data-accent="slate"] {
+  --accent: #475569;
+  --accent-rgb: 71, 85, 105;
+}
+.dark[data-accent="slate"] {
+  --accent: #64748B;
+  --accent-rgb: 100, 116, 139;
+}
+
+[data-accent="rose"] {
+  --accent: #E11D48;
+  --accent-rgb: 225, 29, 72;
+}
+.dark[data-accent="rose"] {
+  --accent: #F43F5E;
+  --accent-rgb: 244, 63, 94;
+}
+
+/* UI Scale */
+[data-scale="compact"] {
+  font-size: 15px;
+}
+[data-scale="default"] {
+  font-size: 16px;
+}
+[data-scale="comfortable"] {
+  font-size: 17px;
+}
+
 @layer base {
   body {
-    background-color: #F8F6F1;
-    color: #22201D;
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
     font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+    transition: background-color 200ms cubic-bezier(0.22, 1, 0.36, 1), color 200ms cubic-bezier(0.22, 1, 0.36, 1);
   }
 
   h1, h2, h3, h4 {
@@ -17,12 +105,12 @@
 
 /* Hairline Grid & Divider */
 .hairline-border {
-  border: 1px solid #E7E2DA;
+  border: 1px solid var(--border-color);
 }
 
 .hairline-divider {
   height: 1px;
-  background-color: #E7E2DA;
+  background-color: var(--border-color);
 }
 
 /* Tactile button press with custom smooth cubic-bezier */
@@ -36,13 +124,13 @@
 
 /* Card hover with 1px border transition without lifting card */
 .bento-card {
-  border: 1px solid #E7E2DA;
-  background-color: #FCFBF8;
-  transition: border-color 200ms cubic-bezier(0.22, 1, 0.36, 1);
+  border: 1px solid var(--border-color);
+  background-color: var(--bg-card);
+  transition: border-color 200ms cubic-bezier(0.22, 1, 0.36, 1), background-color 200ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .bento-card:hover {
-  border-color: #C8BFB3;
+  border-color: var(--border-hover);
 }
 
 /* Subtle Shimmer for CTA */
@@ -89,14 +177,14 @@
 }
 
 ::-webkit-scrollbar-track {
-  background: #F8F6F1;
+  background: var(--bg-primary);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #D5CDC2;
+  background: var(--border-color);
   border-radius: 2px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #BDB2A6;
+  background: var(--border-hover);
 }
