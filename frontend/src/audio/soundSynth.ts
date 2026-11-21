@@ -325,6 +325,92 @@ class SoundSynth {
       });
     } catch {}
   }
+
+  // Water fountain bubbling / flowing trickle
+  playWaterStream() {
+    if (!this.enabled || !this.sfxEnabled) return;
+    try {
+      this.initCtx();
+      if (!this.ctx || !this.masterGain) return;
+
+      const now = this.ctx.currentTime;
+      [580, 720, 640, 810].forEach((freq, idx) => {
+        const time = now + (idx * 0.08);
+        const osc = this.ctx!.createOscillator();
+        const gain = this.ctx!.createGain();
+
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq, time);
+        osc.frequency.exponentialRampToValueAtTime(freq * 1.25, time + 0.06);
+
+        gain.gain.setValueAtTime(0.001, time);
+        gain.gain.linearRampToValueAtTime(0.07, time + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.001, time + 0.12);
+
+        osc.connect(gain);
+        gain.connect(this.masterGain!);
+
+        osc.start(time);
+        osc.stop(time + 0.14);
+      });
+    } catch {}
+  }
+
+  // Crisp cat grass chewing
+  playGrassCrunch() {
+    if (!this.enabled || !this.sfxEnabled) return;
+    try {
+      this.initCtx();
+      if (!this.ctx || !this.masterGain) return;
+
+      const now = this.ctx.currentTime;
+      [360, 420, 390].forEach((freq, idx) => {
+        const time = now + (idx * 0.1);
+        const osc = this.ctx!.createOscillator();
+        const gain = this.ctx!.createGain();
+
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(freq, time);
+
+        gain.gain.setValueAtTime(0.08, time);
+        gain.gain.exponentialRampToValueAtTime(0.001, time + 0.07);
+
+        osc.connect(gain);
+        gain.connect(this.masterGain!);
+
+        osc.start(time);
+        osc.stop(time + 0.08);
+      });
+    } catch {}
+  }
+
+  // Scratching post rope friction
+  playScratch() {
+    if (!this.enabled || !this.sfxEnabled) return;
+    try {
+      this.initCtx();
+      if (!this.ctx || !this.masterGain) return;
+
+      const now = this.ctx.currentTime;
+      [180, 240, 210, 260].forEach((freq, idx) => {
+        const time = now + (idx * 0.06);
+        const osc = this.ctx!.createOscillator();
+        const gain = this.ctx!.createGain();
+
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(freq, time);
+
+        gain.gain.setValueAtTime(0.07, time);
+        gain.gain.exponentialRampToValueAtTime(0.001, time + 0.05);
+
+        osc.connect(gain);
+        gain.connect(this.masterGain!);
+
+        osc.start(time);
+        osc.stop(time + 0.06);
+      });
+    } catch {}
+  }
 }
 
 export const sounds = new SoundSynth();

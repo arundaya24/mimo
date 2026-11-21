@@ -535,6 +535,99 @@ class CatEmotionalService
                     : "Camilan gurih dinikmati {$cat->name} dengan gembira!";
                 break;
 
+            case 'cat_grass':
+                if ($cat->is_sleeping) {
+                    return [
+                        'success' => false,
+                        'message' => "{$cat->name} sedang tidur lelap.",
+                        'cat' => $this->formatCatResponse($cat, 'sleeping'),
+                    ];
+                }
+                $newCleanliness = $this->clamp(($stats->cleanliness ?? 90.0) + 15.0);
+                $newComfort = $this->clamp(($stats->comfort ?? 85.0) + 14.0);
+                $newHappiness = $this->clamp($stats->happiness + 16.0);
+                $statChanges = [
+                    'cleanliness' => round($newCleanliness - ($stats->cleanliness ?? 90.0), 1),
+                    'comfort' => round($newComfort - ($stats->comfort ?? 85.0), 1),
+                    'happiness' => round($newHappiness - $stats->happiness, 1),
+                ];
+                $stats->update([
+                    'cleanliness' => $newCleanliness,
+                    'comfort' => $newComfort,
+                    'happiness' => $newHappiness,
+                ]);
+                $cat->update([
+                    'last_interaction_at' => Carbon::now(),
+                    'last_calculated_at' => Carbon::now(),
+                    'last_activity_type' => 'cat_grass',
+                    'boredom_counter' => 0,
+                ]);
+                $animationState = 'eating';
+                $feedbackMessage = "{$cat->name} mengunyah rumput gandum segar! Serat hijau alami sangat baik untuk sistem pencernaannya.";
+                break;
+
+            case 'water_fountain':
+                if ($cat->is_sleeping) {
+                    return [
+                        'success' => false,
+                        'message' => "{$cat->name} sedang tidur lelap.",
+                        'cat' => $this->formatCatResponse($cat, 'sleeping'),
+                    ];
+                }
+                $newComfort = $this->clamp(($stats->comfort ?? 85.0) + 18.0);
+                $newCleanliness = $this->clamp(($stats->cleanliness ?? 90.0) + 12.0);
+                $newHappiness = $this->clamp($stats->happiness + 14.0);
+                $statChanges = [
+                    'comfort' => round($newComfort - ($stats->comfort ?? 85.0), 1),
+                    'cleanliness' => round($newCleanliness - ($stats->cleanliness ?? 90.0), 1),
+                    'happiness' => round($newHappiness - $stats->happiness, 1),
+                ];
+                $stats->update([
+                    'comfort' => $newComfort,
+                    'cleanliness' => $newCleanliness,
+                    'happiness' => $newHappiness,
+                ]);
+                $cat->update([
+                    'last_interaction_at' => Carbon::now(),
+                    'last_calculated_at' => Carbon::now(),
+                    'last_activity_type' => 'water_fountain',
+                    'boredom_counter' => 0,
+                ]);
+                $animationState = 'curious';
+                $feedbackMessage = "{$cat->name} meminum aliran air sejuk dari water fountain. Tubuhnya segar dan terhidrasi!";
+                break;
+
+            case 'scratch_tree':
+                if ($cat->is_sleeping) {
+                    return [
+                        'success' => false,
+                        'message' => "{$cat->name} sedang tidur lelap.",
+                        'cat' => $this->formatCatResponse($cat, 'sleeping'),
+                    ];
+                }
+                $newHappiness = $this->clamp($stats->happiness + 20.0);
+                $newComfort = $this->clamp(($stats->comfort ?? 85.0) + 16.0);
+                $newEnergy = $this->clamp($stats->energy - 6.0);
+                $statChanges = [
+                    'happiness' => round($newHappiness - $stats->happiness, 1),
+                    'comfort' => round($newComfort - ($stats->comfort ?? 85.0), 1),
+                    'energy' => round($newEnergy - $stats->energy, 1),
+                ];
+                $stats->update([
+                    'happiness' => $newHappiness,
+                    'comfort' => $newComfort,
+                    'energy' => $newEnergy,
+                ]);
+                $cat->update([
+                    'last_interaction_at' => Carbon::now(),
+                    'last_calculated_at' => Carbon::now(),
+                    'last_activity_type' => 'scratch_tree',
+                    'boredom_counter' => 0,
+                ]);
+                $animationState = 'playing';
+                $feedbackMessage = "{$cat->name} mencakar tiang rami dengan riang gembira! Kukunya terawat dan rasa bosan hilang.";
+                break;
+
             default:
                 return [
                     'success' => false,

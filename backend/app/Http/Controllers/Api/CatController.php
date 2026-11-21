@@ -75,7 +75,7 @@ class CatController extends Controller
     {
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:50'],
-            'gender' => ['nullable', 'string', 'in:male,female,non-binary'],
+            'gender' => ['nullable', 'string', 'in:male,female'],
             'personality_code' => ['required', 'string', 'exists:cat_personalities,code'],
             'fur_color' => ['required', 'string'],
             'fur_secondary_color' => ['nullable', 'string'],
@@ -133,7 +133,7 @@ class CatController extends Controller
         $cat = $user->cat()->firstOrFail();
 
         $validated = $request->validate([
-            'room' => ['required', 'string', 'in:living_room,bedroom,balcony,garden'],
+            'room' => ['required', 'string', 'in:living_room,bedroom,balcony,garden,kitchen'],
         ]);
 
         $cat->update(['current_room' => $validated['room']]);

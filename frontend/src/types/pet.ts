@@ -57,7 +57,7 @@ export interface CatPersonality {
 export interface Cat {
   id: number;
   name: string;
-  gender: string;
+  gender: 'male' | 'female';
   is_sleeping: boolean;
   current_room: string;
   current_state: PetState;
