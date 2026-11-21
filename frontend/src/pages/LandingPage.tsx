@@ -145,7 +145,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                   state={demoState}
                   gender={demoGender}
                   onClick={() => {
-                    sounds.playMeow(demoGender === 'male' ? 0.88 : 1.18);
+                    sounds.playEmotionalMeow(demoState, demoGender);
                     handleStateSelect(demoState === 'happy' ? 'idle' : 'happy');
                   }}
                   size="lg"

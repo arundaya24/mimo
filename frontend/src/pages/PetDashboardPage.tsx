@@ -116,18 +116,40 @@ export const PetDashboardPage: React.FC<PetDashboardPageProps> = ({
     if (loadingAction) return;
     setLoadingAction(action);
 
-    if (action === 'feed') sounds.playCrunch();
-    else if (action === 'pet') sounds.playPurr();
-    else if (action === 'play') sounds.playPounce();
-    else if (action === 'groom') sounds.playBrush();
-    else if (action === 'clean_room') sounds.playClick();
-    else if (action === 'scold') sounds.playScoldReaction();
-    else if (action === 'sleep') sounds.playSleepChime();
-    else if (action === 'cat_grass') sounds.playGrassCrunch();
-    else if (action === 'water_fountain') sounds.playWaterStream();
-    else if (action === 'scratch_tree') sounds.playScratch();
-    else if (action === 'treat') sounds.playCrunch();
-    else sounds.playClick();
+    if (action === 'feed') {
+      sounds.playCrunch();
+      setTimeout(() => sounds.playEmotionalMeow('eating', cat.gender), 200);
+    } else if (action === 'pet') {
+      sounds.playEmotionalMeow('affectionate', cat.gender);
+    } else if (action === 'play') {
+      sounds.playPlayingChirp(cat.gender === 'male' ? 0.88 : 1.18);
+    } else if (action === 'groom') {
+      sounds.playBrush();
+      setTimeout(() => sounds.playEmotionalMeow('affectionate', cat.gender), 200);
+    } else if (action === 'clean_room') {
+      sounds.playClick();
+      setTimeout(() => sounds.playEmotionalMeow('happy', cat.gender), 250);
+    } else if (action === 'scold') {
+      sounds.playScoldReaction();
+      setTimeout(() => sounds.playEmotionalMeow('scared', cat.gender), 150);
+    } else if (action === 'sleep') {
+      sounds.playSleepChime();
+      setTimeout(() => sounds.playEmotionalMeow('sleeping', cat.gender), 250);
+    } else if (action === 'cat_grass') {
+      sounds.playGrassCrunch();
+      setTimeout(() => sounds.playEmotionalMeow('happy', cat.gender), 200);
+    } else if (action === 'water_fountain') {
+      sounds.playWaterStream();
+      setTimeout(() => sounds.playEmotionalMeow('curious', cat.gender), 200);
+    } else if (action === 'scratch_tree') {
+      sounds.playScratch();
+      setTimeout(() => sounds.playEmotionalMeow('playing', cat.gender), 200);
+    } else if (action === 'treat') {
+      sounds.playCrunch();
+      setTimeout(() => sounds.playEmotionalMeow('happy', cat.gender), 200);
+    } else {
+      sounds.playClick();
+    }
 
     try {
       const result = await petService.interact(action, itemCode);
@@ -165,6 +187,7 @@ export const PetDashboardPage: React.FC<PetDashboardPageProps> = ({
 
   // Handle direct cat click
   const handleCatClick = () => {
+    sounds.playEmotionalMeow(cat.current_state, cat.gender);
     handleAction('pet');
   };
 

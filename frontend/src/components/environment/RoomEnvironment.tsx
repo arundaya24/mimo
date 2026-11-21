@@ -175,6 +175,9 @@ export const RoomEnvironment: React.FC<RoomEnvironmentProps> = ({
     walkTimeoutRef.current = setTimeout(() => {
       setIsWalking(false);
       setInternalState(arrivalState);
+      if (arrivalState !== 'idle' && arrivalState !== 'sitting' && arrivalState !== 'sleeping') {
+        sounds.playEmotionalMeow(arrivalState, gender);
+      }
     }, duration * 1000);
   };
 
@@ -283,6 +286,7 @@ export const RoomEnvironment: React.FC<RoomEnvironmentProps> = ({
 
     setClickMarker({ x: clampedX, y: clampedY, key: Date.now() });
     sounds.playClick();
+    setTimeout(() => sounds.playEmotionalMeow('curious', gender), 90);
 
     lastManualActionRef.current = Date.now();
     walkTo(clampedX, clampedY, 'curious');
@@ -876,7 +880,7 @@ export const RoomEnvironment: React.FC<RoomEnvironmentProps> = ({
             setIsWalking(false);
             if (walkTimeoutRef.current) clearTimeout(walkTimeoutRef.current);
             setInternalState('curious');
-            sounds.playPurr();
+            sounds.playEmotionalMeow('curious', gender);
             lastManualActionRef.current = Date.now();
           }}
           onDragEnd={(_e, info) => {
@@ -884,6 +888,7 @@ export const RoomEnvironment: React.FC<RoomEnvironmentProps> = ({
 
             const dragDist = Math.hypot(info.offset.x, info.offset.y);
             if (dragDist < 6) {
+              sounds.playEmotionalMeow(internalState, gender);
               onCatClick();
               return;
             }
@@ -896,7 +901,7 @@ export const RoomEnvironment: React.FC<RoomEnvironmentProps> = ({
 
             setPosition({ x: newX, y: newY });
             lastManualActionRef.current = Date.now();
-            sounds.playPounce();
+            sounds.playEmotionalMeow('happy', gender);
 
             // Settle down reaction
             setInternalState('happy');
@@ -914,7 +919,10 @@ export const RoomEnvironment: React.FC<RoomEnvironmentProps> = ({
             state={internalState}
             gender={gender}
             onClick={() => {
-              if (!isDragging) onCatClick();
+              if (!isDragging) {
+                sounds.playEmotionalMeow(internalState, gender);
+                onCatClick();
+              }
             }}
             size="lg"
             showShadow={true}

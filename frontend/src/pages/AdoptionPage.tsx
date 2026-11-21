@@ -312,7 +312,7 @@ export const AdoptionPage: React.FC<AdoptionPageProps> = ({ onAdoptionSuccess, o
                   state="happy"
                   size="lg"
                   gender={gender}
-                  onClick={() => sounds.playMeow(gender === 'male' ? 0.88 : 1.18)}
+                  onClick={() => sounds.playEmotionalMeow('happy', gender)}
                 />
               </div>
               <div className="pt-2 font-mono text-xs">
@@ -408,7 +408,7 @@ export const AdoptionPage: React.FC<AdoptionPageProps> = ({ onAdoptionSuccess, o
                   state={previewState}
                   size="xl"
                   gender={gender}
-                  onClick={() => sounds.playMeow(gender === 'male' ? 0.88 : 1.18)}
+                  onClick={() => sounds.playEmotionalMeow(previewState, gender)}
                 />
               </div>
               <div className="font-mono text-[11px] text-[#756A5E] dark:text-[#B5ACA1] uppercase">
@@ -443,7 +443,7 @@ export const AdoptionPage: React.FC<AdoptionPageProps> = ({ onAdoptionSuccess, o
                 state="affectionate"
                 size="lg"
                 gender={gender}
-                onClick={() => sounds.playPurr()}
+                onClick={() => sounds.playEmotionalMeow('affectionate', gender)}
               />
             </div>
 
