@@ -1,0 +1,23 @@
+{
+  "name": "mimo-virtual-pet",
+  "version": "1.0.0",
+  "description": "MIMO - A little life to care for. Virtual pet simulator.",
+  "private": true,
+  "scripts": {
+    "dev": "npm run dev:frontend",
+    "dev:frontend": "npm --prefix frontend run dev",
+    "dev:backend": "php -S 127.0.0.1:8000 -t backend/public",
+    "build:frontend": "npm --prefix frontend run build",
+    "test:backend": "cd backend && php artisan test"
+  },
+  "keywords": [
+    "mimo",
+    "virtual-pet",
+    "react",
+    "laravel",
+    "framer-motion",
+    "tailwind"
+  ],
+  "author": "MIMO Team",
+  "license": "MIT"
+}

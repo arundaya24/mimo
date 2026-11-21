@@ -1,0 +1,63 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    background-color: #FBF8F2;
+    color: #2E2B28;
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  }
+
+  h1, h2, h3, .font-heading {
+    font-family: 'Fraunces', serif;
+  }
+}
+
+/* Custom subtle warm paper texture overlay */
+.paper-texture {
+  background-color: #FBF8F2;
+  background-image: radial-gradient(#E8DEC8 0.75px, transparent 0.75px);
+  background-size: 24px 24px;
+}
+
+/* Custom cozy scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #F5EFE6;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #D7CEC7;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #B8A89C;
+}
+
+/* Interactive card & tactile button styles */
+.tactile-btn {
+  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 3px 0 0 rgba(46, 43, 40, 0.15);
+}
+
+.tactile-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 0 0 rgba(46, 43, 40, 0.18);
+}
+
+.tactile-btn:active {
+  transform: translateY(2px);
+  box-shadow: 0 1px 0 0 rgba(46, 43, 40, 0.15);
+}
+
+.cozy-card {
+  background: #FFFDF9;
+  border: 1.5px solid #EFE6D9;
+  box-shadow: 0 4px 16px -2px rgba(92, 73, 59, 0.05);
+}
