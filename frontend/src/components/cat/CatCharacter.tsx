@@ -154,57 +154,65 @@ export const CatCharacter: React.FC<CatCharacterProps> = ({
         />
       )}
 
-      {/* Interactive Love / Thought Particles */}
+      {/* Interactive State Indicators (Pure Vector & Monospace, Zero Emojis) */}
       <AnimatePresence>
         {isAffectionate && (
           <motion.div
             initial={{ opacity: 0, y: 10, scale: 0.5 }}
-            animate={{ opacity: [0, 1, 0], y: -35, scale: [0.6, 1.2, 0.8] }}
+            animate={{ opacity: [0, 1, 0], y: -32, scale: [0.6, 1.1, 0.8] }}
             exit={{ opacity: 0 }}
             transition={{ duration: 1.8, repeat: Infinity, delay: 0.2 }}
-            className="absolute -top-3 right-6 text-terracotta-500 text-lg pointer-events-none"
+            className="absolute -top-3 right-6 text-terracotta-500 pointer-events-none"
           >
-            ♥
+            <svg viewBox="0 0 24 24" className="w-4 h-4 fill-current">
+              <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+            </svg>
           </motion.div>
         )}
         {isHappy && (
           <motion.div
             initial={{ opacity: 0, scale: 0 }}
-            animate={{ opacity: [0, 1, 0], y: -25, scale: [0.5, 1.1, 0.9] }}
+            animate={{ opacity: [0, 1, 0], y: -24, scale: [0.5, 1, 0.8] }}
             transition={{ duration: 1.5, repeat: Infinity, delay: 0.4 }}
-            className="absolute -top-2 left-8 text-amber-500 text-sm pointer-events-none"
+            className="absolute -top-2 left-8 text-amber-500 pointer-events-none"
           >
-            ✨
+            <svg viewBox="0 0 24 24" className="w-3.5 h-3.5 fill-current">
+              <path d="M12 2L14.4 9.6L22 12L14.4 14.4L12 22L9.6 14.4L2 12L9.6 9.6L12 2Z" />
+            </svg>
           </motion.div>
         )}
         {isSleeping && (
           <motion.div
             initial={{ opacity: 0, y: 0 }}
-            animate={{ opacity: [0, 0.9, 0], y: -30, x: [0, 8, 14] }}
+            animate={{ opacity: [0, 0.9, 0], y: -28, x: [0, 6, 12] }}
             transition={{ duration: 2.4, repeat: Infinity }}
-            className="absolute -top-4 right-10 text-brown-500 font-display text-sm font-semibold pointer-events-none"
+            className="absolute -top-4 right-10 text-brown-600 font-mono text-[11px] font-medium tracking-widest pointer-events-none uppercase"
           >
-            Zzz...
+            zzz
           </motion.div>
         )}
         {isAngry && (
           <motion.div
             initial={{ opacity: 0, scale: 0.5 }}
-            animate={{ opacity: [0, 1, 0], scale: [0.8, 1.2, 0.9], y: -20 }}
+            animate={{ opacity: [0, 1, 0], scale: [0.8, 1.1, 0.9], y: -18 }}
             transition={{ duration: 1, repeat: Infinity }}
-            className="absolute -top-3 left-6 text-red-500 font-bold text-base pointer-events-none"
+            className="absolute -top-3 left-6 text-rose-600 pointer-events-none"
           >
-            💢
+            <svg viewBox="0 0 24 24" className="w-4 h-4 stroke-current fill-none" strokeWidth="2.5" strokeLinecap="round">
+              <path d="M18 6L6 18M6 6l12 12" />
+            </svg>
           </motion.div>
         )}
         {isScared && (
           <motion.div
             initial={{ opacity: 0 }}
-            animate={{ opacity: [0, 1, 0], y: -20 }}
+            animate={{ opacity: [0, 1, 0], y: -18 }}
             transition={{ duration: 0.8, repeat: Infinity }}
-            className="absolute -top-4 right-8 text-blue-400 font-bold text-sm pointer-events-none"
+            className="absolute -top-4 right-8 text-sky-500 pointer-events-none"
           >
-            💦
+            <svg viewBox="0 0 24 24" className="w-3.5 h-3.5 fill-current">
+              <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z" />
+            </svg>
           </motion.div>
         )}
       </AnimatePresence>

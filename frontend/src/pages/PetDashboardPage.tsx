@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import confetti from 'canvas-confetti';
-import { Cat, PetState, InventoryItem, InteractionLog } from '../types/pet';
+import { Cat, InventoryItem, InteractionLog } from '../types/pet';
 import { petService } from '../services/petService';
 import { RoomEnvironment } from '../components/environment/RoomEnvironment';
 import { StatBar } from '../components/ui/StatBar';
@@ -12,18 +12,17 @@ import {
   Utensils,
   Hand,
   Gamepad2,
-  Volume2,
   Moon,
   Sun,
-  Sparkles,
   ShoppingBag,
   BookOpen,
-  Settings,
-  AlertTriangle,
+  SlidersHorizontal,
+  AlertOctagon,
   Heart,
-  Clock,
   X,
-  Plus
+  Package,
+  Check,
+  Activity
 } from 'lucide-react';
 
 interface PetDashboardPageProps {
@@ -35,7 +34,6 @@ interface PetDashboardPageProps {
 export const PetDashboardPage: React.FC<PetDashboardPageProps> = ({
   initialCat,
   onUpdateCat,
-  onAdoptNew,
 }) => {
   const [cat, setCat] = useState<Cat>(initialCat);
   const [loadingAction, setLoadingAction] = useState<string | null>(null);
@@ -60,7 +58,7 @@ export const PetDashboardPage: React.FC<PetDashboardPageProps> = ({
     setCat(initialCat);
   }, [initialCat]);
 
-  // Update game clock every minute
+  // Update game clock
   useEffect(() => {
     const updateTime = () => {
       const now = new Date();
@@ -87,7 +85,7 @@ export const PetDashboardPage: React.FC<PetDashboardPageProps> = ({
     return () => clearInterval(syncInterval);
   }, [onUpdateCat]);
 
-  // Fetch inventory when opened
+  // Fetch inventory
   const loadInventory = async () => {
     try {
       const items = await petService.getInventory();
@@ -95,7 +93,7 @@ export const PetDashboardPage: React.FC<PetDashboardPageProps> = ({
     } catch {}
   };
 
-  // Fetch history when opened
+  // Fetch history
   const loadHistory = async () => {
     try {
       const logs = await petService.getHistory();
@@ -107,7 +105,7 @@ export const PetDashboardPage: React.FC<PetDashboardPageProps> = ({
     setFeedbackToast({ message, changes });
     setTimeout(() => {
       setFeedbackToast(null);
-    }, 4000);
+    }, 3500);
   };
 
   // Execute Core Interactions
@@ -115,7 +113,6 @@ export const PetDashboardPage: React.FC<PetDashboardPageProps> = ({
     if (loadingAction) return;
     setLoadingAction(action);
 
-    // Audio feedback triggers
     if (action === 'feed') sounds.playCrunch();
     else if (action === 'pet') sounds.playPurr();
     else if (action === 'play') sounds.playPounce();
@@ -132,16 +129,15 @@ export const PetDashboardPage: React.FC<PetDashboardPageProps> = ({
 
       showToast(result.message, result.stat_changes);
 
-      // Trigger sparkles for joyful actions
-      if (action === 'pet' || action === 'play' || action === 'treat') {
+      if (action === 'pet' || action === 'play') {
         confetti({
-          particleCount: 25,
-          spread: 40,
+          particleCount: 20,
+          spread: 35,
           origin: { y: 0.7 },
         });
       }
     } catch (err: unknown) {
-      showToast(err instanceof Error ? err.message : 'Tindakan gagal.');
+      showToast(err instanceof Error ? err.message : 'Tindakan gagal diproses.');
     } finally {
       setLoadingAction(null);
     }
@@ -149,22 +145,14 @@ export const PetDashboardPage: React.FC<PetDashboardPageProps> = ({
 
   // Handle room object clicks
   const handleObjectClick = (objectType: string) => {
-    if (objectType === 'bowl') {
-      handleAction('feed');
-    } else if (objectType === 'bed') {
-      handleAction('sleep');
-    } else if (objectType === 'toy') {
-      handleAction('play');
-    }
+    if (objectType === 'bowl') handleAction('feed');
+    else if (objectType === 'bed') handleAction('sleep');
+    else if (objectType === 'toy') handleAction('play');
   };
 
   // Handle direct cat click
   const handleCatClick = () => {
-    if (cat.is_sleeping) {
-      handleAction('pet'); // Petting gently in sleep
-    } else {
-      handleAction('pet');
-    }
+    handleAction('pet');
   };
 
   // Switch Room
@@ -184,7 +172,7 @@ export const PetDashboardPage: React.FC<PetDashboardPageProps> = ({
       setCat(res.cat);
       onUpdateCat(res.cat);
       showToast(res.message, res.stat_changes);
-      loadInventory(); // Refresh remaining quantity
+      loadInventory();
     } catch (err: unknown) {
       showToast(err instanceof Error ? err.message : 'Gagal menggunakan item.');
     }
@@ -196,62 +184,41 @@ export const PetDashboardPage: React.FC<PetDashboardPageProps> = ({
       const res = await petService.updateCustomization(newCustomization);
       setCat(res.cat);
       onUpdateCat(res.cat);
-      showToast('Penampilan berhasil diperbarui!');
+      showToast('Penampilan berhasil diperbarui.');
     } catch {}
   };
 
-  const emotionLabels: Record<string, { label: string; badgeColor: string }> = {
-    idle: { label: 'Santai', badgeColor: 'bg-cream-200 text-charcoal-700' },
-    walking: { label: 'Jalan-jalan', badgeColor: 'bg-cream-200 text-charcoal-700' },
-    sitting: { label: 'Duduk Rapi', badgeColor: 'bg-cream-200 text-charcoal-700' },
-    sleeping: { label: 'Tidur Nyenyak', badgeColor: 'bg-indigo-100 text-indigo-700' },
-    eating: { label: 'Makan Lahap', badgeColor: 'bg-honey-100 text-amber-800' },
-    playing: { label: 'Bermain Lincah', badgeColor: 'bg-emerald-100 text-emerald-800' },
-    happy: { label: 'Sangat Bahagia', badgeColor: 'bg-amber-100 text-amber-800' },
-    scared: { label: 'Ketakutan / Waspada', badgeColor: 'bg-sky-100 text-sky-800' },
-    angry: { label: 'Marah / Kesal', badgeColor: 'bg-rose-100 text-rose-800' },
-    curious: { label: 'Penasaran', badgeColor: 'bg-purple-100 text-purple-800' },
-    affectionate: { label: 'Penuh Kasih', badgeColor: 'bg-terracotta-100 text-terracotta-800' },
-  };
-
-  const currentEmotion = emotionLabels[cat.current_state] || {
-    label: cat.current_state,
-    badgeColor: 'bg-cream-200 text-charcoal-700',
-  };
-
   return (
-    <div className="max-w-6xl mx-auto px-4 py-6 space-y-6 paper-texture">
+    <div className="max-w-6xl mx-auto px-4 py-6 space-y-6 bg-[#F8F6F1]">
       
-      {/* Top Header & Cat Identity Bar */}
-      <div className="bg-white/90 backdrop-blur-sm rounded-3xl border-2 border-cream-300 p-4 sm:p-5 shadow-xs flex flex-wrap items-center justify-between gap-4">
+      {/* Top Header & Telemetry Bar */}
+      <div className="bento-card rounded-xl p-4 sm:p-5 flex flex-wrap items-center justify-between gap-4 text-left">
         
-        {/* Left: Cat Identity Info */}
+        {/* Cat Identity */}
         <div className="flex items-center gap-3">
-          <div className="w-12 h-12 rounded-2xl bg-terracotta-500 text-white flex items-center justify-center text-2xl shadow-sm">
-            🐾
+          <div className="w-10 h-10 rounded-lg bg-[#22201D] text-[#FCFBF8] flex items-center justify-center font-mono font-bold text-sm border border-[#22201D]">
+            {cat.name.charAt(0).toUpperCase()}
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h1 className="text-xl sm:text-2xl font-heading font-bold text-charcoal-900">
+              <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-[#141311]">
                 {cat.name}
               </h1>
-              <span className={`text-[11px] font-semibold px-2.5 py-0.5 rounded-full ${currentEmotion.badgeColor}`}>
-                {currentEmotion.label}
+              <span className="font-mono text-[10px] uppercase tracking-wider font-semibold px-2 py-0.5 rounded border border-[#E7E2DA] bg-[#F8F6F1] text-[#5A5046]">
+                STATE: {cat.current_state}
               </span>
             </div>
-            <p className="text-xs text-brown-500 flex items-center gap-2 mt-0.5">
-              <span className="capitalize font-medium">{cat.gender}</span>
-              <span>•</span>
-              <span className="text-terracotta-600 font-semibold">
-                Karakter {cat.personality.name}
-              </span>
-              <span>•</span>
-              <span className="text-brown-400">Jam: {gameTime}</span>
+            <p className="font-mono text-[11px] text-[#756A5E] flex items-center gap-2 mt-0.5 uppercase tracking-wider">
+              <span>{cat.gender}</span>
+              <span>/</span>
+              <span>{cat.personality.name}</span>
+              <span>/</span>
+              <span>LOCAL TIME {gameTime}</span>
             </p>
           </div>
         </div>
 
-        {/* Right: Quick Action Modals (Tas, Buku Harian, Lemari) */}
+        {/* Modal Triggers */}
         <div className="flex items-center gap-2">
           <button
             onClick={() => {
@@ -259,11 +226,10 @@ export const PetDashboardPage: React.FC<PetDashboardPageProps> = ({
               loadInventory();
               setShowInventory(true);
             }}
-            className="flex items-center gap-1.5 px-3.5 py-2 rounded-2xl bg-cream-100 hover:bg-cream-200 border border-cream-300 text-xs font-semibold text-charcoal-700 transition-all shadow-2xs"
-            title="Buka Tas / Inventory"
+            className="btn-press flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-[#E7E2DA] bg-[#FCFBF8] hover:border-[#C8BFB3] text-xs font-mono font-medium text-[#47433E] transition-colors"
           >
-            <ShoppingBag className="w-4 h-4 text-terracotta-600" />
-            <span className="hidden sm:inline">Tas Item</span>
+            <ShoppingBag className="w-3.5 h-3.5 text-[#C75D35]" />
+            <span>INVENTORY</span>
           </button>
 
           <button
@@ -272,11 +238,10 @@ export const PetDashboardPage: React.FC<PetDashboardPageProps> = ({
               loadHistory();
               setShowDiary(true);
             }}
-            className="flex items-center gap-1.5 px-3.5 py-2 rounded-2xl bg-cream-100 hover:bg-cream-200 border border-cream-300 text-xs font-semibold text-charcoal-700 transition-all shadow-2xs"
-            title="Buku Harian / Diary"
+            className="btn-press flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-[#E7E2DA] bg-[#FCFBF8] hover:border-[#C8BFB3] text-xs font-mono font-medium text-[#47433E] transition-colors"
           >
-            <BookOpen className="w-4 h-4 text-brown-600" />
-            <span className="hidden sm:inline">Buku Harian</span>
+            <BookOpen className="w-3.5 h-3.5 text-[#756A5E]" />
+            <span>DIARY</span>
           </button>
 
           <button
@@ -284,11 +249,10 @@ export const PetDashboardPage: React.FC<PetDashboardPageProps> = ({
               sounds.playClick();
               setShowCloset(true);
             }}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-2xl bg-cream-100 hover:bg-cream-200 border border-cream-300 text-xs font-semibold text-charcoal-700 transition-all shadow-2xs"
-            title="Atur Penampilan"
+            className="btn-press flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-[#E7E2DA] bg-[#FCFBF8] hover:border-[#C8BFB3] text-xs font-mono font-medium text-[#47433E] transition-colors"
           >
-            <Settings className="w-4 h-4 text-brown-500" />
-            <span className="hidden sm:inline">Lemari</span>
+            <SlidersHorizontal className="w-3.5 h-3.5 text-[#756A5E]" />
+            <span>PHENOTYPE</span>
           </button>
         </div>
       </div>
@@ -297,29 +261,30 @@ export const PetDashboardPage: React.FC<PetDashboardPageProps> = ({
       <AnimatePresence>
         {feedbackToast && (
           <motion.div
-            initial={{ opacity: 0, y: -15, scale: 0.95 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -10, scale: 0.95 }}
-            className="bg-charcoal-900 text-cream-50 px-4 py-3 rounded-2xl shadow-xl flex items-center justify-between gap-3 text-xs sm:text-sm font-medium z-30 border border-charcoal-700"
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
+            className="bg-[#181614] text-[#F8F6F1] px-4 py-2.5 rounded-lg border border-[#322F2B] flex items-center justify-between gap-4 text-xs font-mono"
           >
             <div className="flex items-center gap-2">
-              <span className="text-base">✨</span>
+              <span className="w-1.5 h-1.5 rounded-full bg-[#C75D35]" />
               <span>{feedbackToast.message}</span>
             </div>
 
             {feedbackToast.changes && (
-              <div className="flex items-center gap-2 text-xs font-mono font-semibold">
+              <div className="flex items-center gap-1.5 text-[10px]">
                 {Object.entries(feedbackToast.changes).map(([k, v]) => {
                   if (typeof v !== 'number' || v === 0) return null;
                   const isPositive = v > 0;
                   return (
                     <span
                       key={k}
-                      className={`px-1.5 py-0.5 rounded ${
-                        isPositive ? 'bg-emerald-800 text-emerald-200' : 'bg-rose-800 text-rose-200'
+                      className={`px-1.5 py-0.2 rounded font-semibold ${
+                        isPositive ? 'text-emerald-300 bg-emerald-950/80 border border-emerald-800' : 'text-rose-300 bg-rose-950/80 border border-rose-800'
                       }`}
                     >
-                      {k}: {isPositive ? `+${v}` : v}
+                      {k.toUpperCase()}: {isPositive ? `+${v}` : v}
                     </span>
                   );
                 })}
@@ -329,16 +294,14 @@ export const PetDashboardPage: React.FC<PetDashboardPageProps> = ({
         )}
       </AnimatePresence>
 
-      {/* Main Living Room Showcase with Speech Bubble */}
-      <div className="space-y-4">
-        {/* Cat dynamic thought bubble */}
+      {/* Room Showcase + Thought Bubble */}
+      <div className="space-y-3">
         <CatSpeechBubble
           thought={cat.current_thought}
           state={cat.current_state}
           catName={cat.name}
         />
 
-        {/* 2D Interactive Room Environment */}
         <RoomEnvironment
           customization={cat.customization}
           state={cat.current_state}
@@ -352,223 +315,225 @@ export const PetDashboardPage: React.FC<PetDashboardPageProps> = ({
       </div>
 
       {/* Primary Interaction Dock */}
-      <div className="bg-white/95 rounded-3xl border-2 border-cream-300 p-4 sm:p-6 shadow-sm">
-        <div className="flex items-center justify-between mb-4">
-          <span className="text-xs font-semibold uppercase tracking-wider text-brown-600">
-            Aksi Interaksi Langsung
+      <div className="bento-card rounded-xl p-4 sm:p-5 text-left">
+        <div className="flex items-center justify-between mb-3">
+          <span className="font-mono text-[10px] font-semibold uppercase tracking-wider text-[#756A5E]">
+            DIRECT INTERACTION DOCK
           </span>
-          <span className="text-[11px] text-brown-400">
-            Respon bergantung pada kepribadian {cat.name}
+          <span className="font-mono text-[10px] text-[#9E9284]">
+            LATENCY: DETERMINISTIC // SERVER SYNC
           </span>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-5 gap-2.5">
           
-          {/* 1. Feed */}
+          {/* Feed */}
           <button
             onClick={() => handleAction('feed')}
             disabled={loadingAction !== null || cat.is_sleeping}
-            className="tactile-btn p-3.5 rounded-2xl bg-honey-100 hover:bg-honey-200 text-amber-900 border border-honey-300 font-semibold text-xs sm:text-sm flex flex-col items-center gap-1.5 disabled:opacity-50"
+            className="btn-press p-3 rounded-lg border border-[#E7E2DA] bg-[#FCFBF8] hover:border-[#C8BFB3] text-left flex flex-col gap-1 disabled:opacity-40"
           >
-            <div className="w-9 h-9 rounded-xl bg-white flex items-center justify-center text-amber-700 shadow-2xs">
-              <Utensils className="w-5 h-5" />
+            <div className="flex items-center justify-between">
+              <span className="font-mono text-[10px] text-[#9E9284]">01</span>
+              <Utensils className="w-3.5 h-3.5 text-[#C75D35]" />
             </div>
-            <span>Beri Makan</span>
-            <span className="text-[10px] text-amber-700/80 font-normal">Kenyang -35%</span>
+            <span className="font-mono text-xs font-semibold text-[#141311]">FEED</span>
+            <span className="font-mono text-[9px] text-[#756A5E]">HUNGER -35%</span>
           </button>
 
-          {/* 2. Pet (Elus) */}
+          {/* Pet */}
           <button
             onClick={() => handleAction('pet')}
             disabled={loadingAction !== null}
-            className="tactile-btn p-3.5 rounded-2xl bg-terracotta-100 hover:bg-terracotta-200 text-terracotta-900 border border-terracotta-300 font-semibold text-xs sm:text-sm flex flex-col items-center gap-1.5 disabled:opacity-50"
+            className="btn-press p-3 rounded-lg border border-[#E7E2DA] bg-[#FCFBF8] hover:border-[#C8BFB3] text-left flex flex-col gap-1 disabled:opacity-40"
           >
-            <div className="w-9 h-9 rounded-xl bg-white flex items-center justify-center text-terracotta-700 shadow-2xs">
-              <Hand className="w-5 h-5" />
+            <div className="flex items-center justify-between">
+              <span className="font-mono text-[10px] text-[#9E9284]">02</span>
+              <Hand className="w-3.5 h-3.5 text-[#C75D35]" />
             </div>
-            <span>Elus Lembut</span>
-            <span className="text-[10px] text-terracotta-700/80 font-normal">Kasih +12%</span>
+            <span className="font-mono text-xs font-semibold text-[#141311]">PET</span>
+            <span className="font-mono text-[9px] text-[#756A5E]">AFFECTION +12%</span>
           </button>
 
-          {/* 3. Play */}
+          {/* Play */}
           <button
             onClick={() => handleAction('play')}
             disabled={loadingAction !== null || cat.is_sleeping}
-            className="tactile-btn p-3.5 rounded-2xl bg-emerald-100 hover:bg-emerald-200 text-emerald-900 border border-emerald-300 font-semibold text-xs sm:text-sm flex flex-col items-center gap-1.5 disabled:opacity-50"
+            className="btn-press p-3 rounded-lg border border-[#E7E2DA] bg-[#FCFBF8] hover:border-[#C8BFB3] text-left flex flex-col gap-1 disabled:opacity-40"
           >
-            <div className="w-9 h-9 rounded-xl bg-white flex items-center justify-center text-emerald-700 shadow-2xs">
-              <Gamepad2 className="w-5 h-5" />
+            <div className="flex items-center justify-between">
+              <span className="font-mono text-[10px] text-[#9E9284]">03</span>
+              <Gamepad2 className="w-3.5 h-3.5 text-[#4A7C59]" />
             </div>
-            <span>Ajak Bermain</span>
-            <span className="text-[10px] text-emerald-700/80 font-normal">Bahagia +25%</span>
+            <span className="font-mono text-xs font-semibold text-[#141311]">PLAY</span>
+            <span className="font-mono text-[9px] text-[#756A5E]">HAPPINESS +25%</span>
           </button>
 
-          {/* 4. Sleep / Wake */}
+          {/* Sleep / Wake */}
           <button
             onClick={() => handleAction('sleep')}
             disabled={loadingAction !== null}
-            className="tactile-btn p-3.5 rounded-2xl bg-indigo-100 hover:bg-indigo-200 text-indigo-900 border border-indigo-300 font-semibold text-xs sm:text-sm flex flex-col items-center gap-1.5 disabled:opacity-50"
+            className="btn-press p-3 rounded-lg border border-[#E7E2DA] bg-[#FCFBF8] hover:border-[#C8BFB3] text-left flex flex-col gap-1 disabled:opacity-40"
           >
-            <div className="w-9 h-9 rounded-xl bg-white flex items-center justify-center text-indigo-700 shadow-2xs">
-              {cat.is_sleeping ? <Sun className="w-5 h-5 text-amber-500" /> : <Moon className="w-5 h-5 text-indigo-700" />}
+            <div className="flex items-center justify-between">
+              <span className="font-mono text-[10px] text-[#9E9284]">04</span>
+              {cat.is_sleeping ? <Sun className="w-3.5 h-3.5 text-[#B88728]" /> : <Moon className="w-3.5 h-3.5 text-[#5A5046]" />}
             </div>
-            <span>{cat.is_sleeping ? 'Bangunkan' : 'Tidurkan'}</span>
-            <span className="text-[10px] text-indigo-700/80 font-normal">Pulihkan Energi</span>
+            <span className="font-mono text-xs font-semibold text-[#141311]">
+              {cat.is_sleeping ? 'WAKE' : 'SLEEP'}
+            </span>
+            <span className="font-mono text-[9px] text-[#756A5E]">ENERGY CYCLE</span>
           </button>
 
-          {/* 5. Scold */}
+          {/* Scold */}
           <button
             onClick={() => {
-              if (window.confirm(`Yakin ingin membentak ${cat.name}? Ini akan menaikkan rasa takut dan menurunkan kepercayaan.`)) {
+              if (window.confirm(`Konfirmasi teguran untuk ${cat.name}? Tingkat fear akan meningkat.`)) {
                 handleAction('scold');
               }
             }}
             disabled={loadingAction !== null}
-            className="tactile-btn col-span-2 sm:col-span-1 p-3.5 rounded-2xl bg-rose-100 hover:bg-rose-200 text-rose-900 border border-rose-300 font-semibold text-xs sm:text-sm flex flex-col items-center gap-1.5 disabled:opacity-50"
+            className="btn-press col-span-2 sm:col-span-1 p-3 rounded-lg border border-[#E7E2DA] bg-[#FCFBF8] hover:border-[#C8BFB3] text-left flex flex-col gap-1 disabled:opacity-40"
           >
-            <div className="w-9 h-9 rounded-xl bg-white flex items-center justify-center text-rose-700 shadow-2xs">
-              <AlertTriangle className="w-5 h-5" />
+            <div className="flex items-center justify-between">
+              <span className="font-mono text-[10px] text-[#9E9284]">05</span>
+              <AlertOctagon className="w-3.5 h-3.5 text-[#A84534]" />
             </div>
-            <span>Tegur / Bentak</span>
-            <span className="text-[10px] text-rose-700/80 font-normal">Takut +28%</span>
+            <span className="font-mono text-xs font-semibold text-[#A84534]">SCOLD</span>
+            <span className="font-mono text-[9px] text-[#756A5E]">FEAR SPIKE</span>
           </button>
 
         </div>
       </div>
 
-      {/* Pet Emotional Stats Grid (6 Parameters: 0-100) */}
-      <div className="bg-white/95 rounded-3xl border-2 border-cream-300 p-4 sm:p-6 shadow-sm">
-        <div className="flex items-center justify-between mb-4">
+      {/* 6 Parameter HUD Bento Grid */}
+      <div className="bento-card rounded-xl p-4 sm:p-5 text-left">
+        <div className="flex items-center justify-between mb-4 pb-2 border-b border-[#E7E2DA]">
           <div>
-            <h3 className="font-heading font-bold text-lg text-charcoal-900">
-              Kondisi Mental & Fisik
+            <span className="font-mono text-[10px] uppercase tracking-wider text-[#9E9284]">
+              TELEMETRY
+            </span>
+            <h3 className="font-bold text-base text-[#141311]">
+              Status Parameter Fisik & Emosi
             </h3>
-            <p className="text-xs text-brown-500">
-              Perhitungan parameter deterministik yang tersinkronisasi server
-            </p>
           </div>
-          <span className="text-xs bg-cream-200 px-3 py-1 rounded-full text-brown-600 font-medium">
-            Skala 0 - 100
+          <span className="font-mono text-[10px] px-2 py-0.5 rounded bg-[#F8F6F1] border border-[#E7E2DA] text-[#5A5046]">
+            SCALE 0 - 100
           </span>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
-          {/* 1. Hunger */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
           <StatBar
-            label="Tingkat Lapar (Hunger)"
+            label="HUNGER"
             value={cat.stats.hunger}
-            icon={<Utensils className="w-3.5 h-3.5" />}
-            color="orange"
+            icon={<Utensils className="w-3 h-3" />}
+            color="terracotta"
             isHunger={true}
-            hint="Makin rendah makin kenyang. Beri makan teratur."
+            hint="Rasa lapar bertambah berdasarkan durasi server."
           />
 
-          {/* 2. Happiness */}
           <StatBar
-            label="Kebahagiaan (Happiness)"
+            label="HAPPINESS"
             value={cat.stats.happiness}
-            icon={<Sparkles className="w-3.5 h-3.5" />}
-            color="yellow"
-            hint="Meningkat saat diajak bermain dan dielus."
+            icon={<Activity className="w-3 h-3" />}
+            color="amber"
+            hint="Meningkat via permainan dan elusan rutin."
           />
 
-          {/* 3. Energy */}
           <StatBar
-            label="Energi (Energy)"
+            label="ENERGY"
             value={cat.stats.energy}
-            icon={<Sun className="w-3.5 h-3.5" />}
-            color="green"
-            hint="Berkurang saat bermain, pulih saat tidur di kasur."
+            icon={<Sun className="w-3 h-3" />}
+            color="sage"
+            hint="Dipulihkan saat status tidur aktif di unit kasur."
           />
 
-          {/* 4. Trust */}
           <StatBar
-            label="Kepercayaan (Trust)"
+            label="TRUST"
             value={cat.stats.trust}
-            icon={<Heart className="w-3.5 h-3.5" />}
-            color="purple"
-            hint="Dibangun perlahan lewat kasih sayang yang konsisten."
+            icon={<Heart className="w-3 h-3" />}
+            color="slate"
+            hint="Kepercayaan dibangun bertahap dari interaksi positif."
           />
 
-          {/* 5. Fear */}
           <StatBar
-            label="Rasa Takut (Fear)"
+            label="FEAR"
             value={cat.stats.fear}
-            icon={<AlertTriangle className="w-3.5 h-3.5" />}
-            color="red"
-            hint="Meningkat drastis jika dibentak. Mereda seiring waktu."
+            icon={<AlertOctagon className="w-3 h-3" />}
+            color="rose"
+            hint="Meningkat jika dibentak, menurun seiring waktu."
           />
 
-          {/* 6. Affection */}
           <StatBar
-            label="Kasih Sayang (Affection)"
+            label="AFFECTION"
             value={cat.stats.affection}
-            icon={<Heart className="w-3.5 h-3.5" />}
-            color="orange"
-            hint="Kucing akan mendengkur hangat saat kasih sayang tinggi."
+            icon={<Heart className="w-3 h-3" />}
+            color="charcoal"
+            hint="Kerapatan ikatan emosional terhadap pemilik."
           />
         </div>
       </div>
 
-      {/* ================= MODAL 1: INVENTORY TAS ================= */}
+      {/* ================= MODAL 1: INVENTORY ================= */}
       <AnimatePresence>
         {showInventory && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-charcoal-900/50 backdrop-blur-2xs">
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#141311]/40 backdrop-blur-2xs">
             <motion.div
-              initial={{ scale: 0.95, opacity: 0 }}
+              initial={{ scale: 0.96, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.95, opacity: 0 }}
-              className="bg-white w-full max-w-lg rounded-3xl border-2 border-cream-300 p-6 shadow-2xl space-y-4"
+              exit={{ scale: 0.96, opacity: 0 }}
+              transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
+              className="bg-[#FCFBF8] w-full max-w-md rounded-xl border border-[#E7E2DA] p-5 text-left space-y-4"
             >
-              <div className="flex items-center justify-between pb-3 border-b border-cream-200">
+              <div className="flex items-center justify-between pb-3 border-b border-[#E7E2DA]">
                 <div className="flex items-center gap-2">
-                  <ShoppingBag className="w-5 h-5 text-terracotta-600" />
-                  <h3 className="font-heading font-bold text-lg text-charcoal-900">
-                    Tas Item Pemilik
-                  </h3>
+                  <ShoppingBag className="w-4 h-4 text-[#C75D35]" />
+                  <span className="font-mono text-xs font-semibold uppercase tracking-wider text-[#141311]">
+                    INVENTORY STORAGE
+                  </span>
                 </div>
                 <button
                   onClick={() => setShowInventory(false)}
-                  className="p-1 rounded-xl text-brown-400 hover:text-charcoal-800"
+                  className="btn-press p-1 text-[#756A5E] hover:text-[#141311]"
                 >
-                  <X className="w-5 h-5" />
+                  <X className="w-4 h-4" />
                 </button>
               </div>
 
-              <div className="space-y-2.5 max-h-80 overflow-y-auto pr-1">
+              <div className="space-y-2 max-h-80 overflow-y-auto pr-1">
                 {inventory.length === 0 ? (
-                  <p className="text-center py-8 text-xs text-brown-400">
-                    Tas kamu saat ini kosong.
+                  <p className="text-center py-8 font-mono text-xs text-[#9E9284]">
+                    INVENTORY KOSONG
                   </p>
                 ) : (
                   inventory.map((item) => (
                     <div
                       key={item.id}
-                      className="p-3.5 rounded-2xl bg-cream-50 border border-cream-300 flex items-center justify-between gap-3"
+                      className="p-3 rounded-lg border border-[#E7E2DA] bg-[#FAF8F5] flex items-center justify-between gap-3"
                     >
                       <div>
                         <div className="flex items-center gap-2">
-                          <span className="font-heading font-bold text-sm text-charcoal-800">
+                          <span className="font-mono text-xs font-bold text-[#141311]">
                             {item.name}
                           </span>
-                          <span className="text-[10px] font-semibold bg-terracotta-100 text-terracotta-700 px-2 py-0.5 rounded-full">
-                            Qty: {item.quantity}
+                          <span className="font-mono text-[9px] px-1.5 py-0.2 rounded bg-[#E7E2DA] text-[#5A5046]">
+                            QTY: {item.quantity}
                           </span>
                         </div>
-                        <p className="text-xs text-brown-500 mt-0.5">
+                        <p className="text-[11px] text-[#5A5046] mt-0.5">
                           {item.description}
                         </p>
-                        <span className="text-[11px] text-emerald-700 font-medium">
-                          ✦ {item.effect_summary}
+                        <span className="font-mono text-[10px] text-[#4A7C59] block mt-0.5">
+                          {item.effect_summary}
                         </span>
                       </div>
 
                       <button
                         onClick={() => handleUseItem(item)}
                         disabled={item.quantity <= 0 || cat.is_sleeping}
-                        className="tactile-btn px-4 py-2 rounded-xl bg-terracotta-500 hover:bg-terracotta-600 text-white font-semibold text-xs whitespace-nowrap disabled:opacity-50"
+                        className="btn-press px-3 py-1.5 rounded bg-[#22201D] text-[#FCFBF8] font-mono text-[10px] font-semibold uppercase disabled:opacity-40"
                       >
-                        Gunakan
+                        USE
                       </button>
                     </div>
                   ))
@@ -579,51 +544,52 @@ export const PetDashboardPage: React.FC<PetDashboardPageProps> = ({
         )}
       </AnimatePresence>
 
-      {/* ================= MODAL 2: CAT DIARY / LOG ================= */}
+      {/* ================= MODAL 2: DIARY ================= */}
       <AnimatePresence>
         {showDiary && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-charcoal-900/50 backdrop-blur-2xs">
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#141311]/40 backdrop-blur-2xs">
             <motion.div
-              initial={{ scale: 0.95, opacity: 0 }}
+              initial={{ scale: 0.96, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.95, opacity: 0 }}
-              className="bg-white w-full max-w-lg rounded-3xl border-2 border-cream-300 p-6 shadow-2xl space-y-4"
+              exit={{ scale: 0.96, opacity: 0 }}
+              transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
+              className="bg-[#FCFBF8] w-full max-w-md rounded-xl border border-[#E7E2DA] p-5 text-left space-y-4"
             >
-              <div className="flex items-center justify-between pb-3 border-b border-cream-200">
+              <div className="flex items-center justify-between pb-3 border-b border-[#E7E2DA]">
                 <div className="flex items-center gap-2">
-                  <BookOpen className="w-5 h-5 text-brown-600" />
-                  <h3 className="font-heading font-bold text-lg text-charcoal-900">
-                    Buku Catatan Kenangan {cat.name}
-                  </h3>
+                  <BookOpen className="w-4 h-4 text-[#756A5E]" />
+                  <span className="font-mono text-xs font-semibold uppercase tracking-wider text-[#141311]">
+                    ACTIVITY LOGS // {cat.name}
+                  </span>
                 </div>
                 <button
                   onClick={() => setShowDiary(false)}
-                  className="p-1 rounded-xl text-brown-400 hover:text-charcoal-800"
+                  className="btn-press p-1 text-[#756A5E] hover:text-[#141311]"
                 >
-                  <X className="w-5 h-5" />
+                  <X className="w-4 h-4" />
                 </button>
               </div>
 
-              <div className="space-y-2.5 max-h-80 overflow-y-auto pr-1">
+              <div className="space-y-2 max-h-80 overflow-y-auto pr-1">
                 {history.length === 0 ? (
-                  <p className="text-center py-8 text-xs text-brown-400">
-                    Belum ada riwayat aktivitas yang tercatat.
+                  <p className="text-center py-8 font-mono text-xs text-[#9E9284]">
+                    BELUM ADA LOG TERCATAT
                   </p>
                 ) : (
                   history.map((log) => (
                     <div
                       key={log.id}
-                      className="p-3 rounded-2xl bg-cream-50 border border-cream-200 text-xs space-y-1"
+                      className="p-2.5 rounded-lg border border-[#E7E2DA] bg-[#FAF8F5] font-mono text-[11px] space-y-0.5"
                     >
                       <div className="flex items-center justify-between">
-                        <span className="font-semibold uppercase tracking-wider text-terracotta-700">
-                          {log.action_type}
+                        <span className="font-semibold uppercase text-[#C75D35]">
+                          ACTION: {log.action_type}
                         </span>
-                        <span className="text-[10px] text-brown-400">
+                        <span className="text-[10px] text-[#9E9284]">
                           {log.time_ago}
                         </span>
                       </div>
-                      <p className="text-charcoal-700 font-medium">{log.notes}</p>
+                      <p className="text-[#322F2B] font-sans text-xs">{log.notes}</p>
                     </div>
                   ))
                 )}
@@ -633,28 +599,29 @@ export const PetDashboardPage: React.FC<PetDashboardPageProps> = ({
         )}
       </AnimatePresence>
 
-      {/* ================= MODAL 3: CLOSET / APPEARANCE ================= */}
+      {/* ================= MODAL 3: CLOSET ================= */}
       <AnimatePresence>
         {showCloset && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-charcoal-900/50 backdrop-blur-2xs">
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#141311]/40 backdrop-blur-2xs">
             <motion.div
-              initial={{ scale: 0.95, opacity: 0 }}
+              initial={{ scale: 0.96, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.95, opacity: 0 }}
-              className="bg-white w-full max-w-2xl rounded-3xl border-2 border-cream-300 p-6 shadow-2xl max-h-[90vh] overflow-y-auto space-y-4"
+              exit={{ scale: 0.96, opacity: 0 }}
+              transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
+              className="bg-[#FCFBF8] w-full max-w-2xl rounded-xl border border-[#E7E2DA] p-6 max-h-[88vh] overflow-y-auto text-left space-y-5"
             >
-              <div className="flex items-center justify-between pb-3 border-b border-cream-200">
+              <div className="flex items-center justify-between pb-3 border-b border-[#E7E2DA]">
                 <div className="flex items-center gap-2">
-                  <Settings className="w-5 h-5 text-terracotta-600" />
-                  <h3 className="font-heading font-bold text-lg text-charcoal-900">
-                    Lemari Aksesori & Bulu {cat.name}
-                  </h3>
+                  <SlidersHorizontal className="w-4 h-4 text-[#C75D35]" />
+                  <span className="font-mono text-xs font-semibold uppercase tracking-wider text-[#141311]">
+                    PHENOTYPE & ACCESSORY EDITOR
+                  </span>
                 </div>
                 <button
                   onClick={() => setShowCloset(false)}
-                  className="p-1 rounded-xl text-brown-400 hover:text-charcoal-800"
+                  className="btn-press p-1 text-[#756A5E] hover:text-[#141311]"
                 >
-                  <X className="w-5 h-5" />
+                  <X className="w-4 h-4" />
                 </button>
               </div>
 
@@ -665,21 +632,21 @@ export const PetDashboardPage: React.FC<PetDashboardPageProps> = ({
                 }}
               />
 
-              <div className="pt-4 border-t border-cream-200 flex justify-end gap-3">
+              <div className="pt-4 border-t border-[#E7E2DA] flex justify-end gap-2.5">
                 <button
                   onClick={() => setShowCloset(false)}
-                  className="px-4 py-2 rounded-xl border border-cream-300 text-xs font-semibold text-brown-600"
+                  className="btn-press px-4 py-2 rounded-lg border border-[#E7E2DA] font-mono text-xs font-semibold text-[#5A5046]"
                 >
-                  Batal
+                  BATAL
                 </button>
                 <button
                   onClick={() => {
                     handleSaveCustomization(cat.customization);
                     setShowCloset(false);
                   }}
-                  className="tactile-btn px-5 py-2 rounded-xl bg-terracotta-500 text-white font-semibold text-xs"
+                  className="btn-press cta-shimmer px-5 py-2 rounded-lg bg-[#22201D] text-[#FCFBF8] font-mono text-xs font-semibold tracking-wider uppercase border border-[#22201D]"
                 >
-                  Simpan Perubahan
+                  SIMPAN PERUBAHAN
                 </button>
               </div>
             </motion.div>

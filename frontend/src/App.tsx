@@ -83,22 +83,22 @@ export function App() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-cream-100 paper-texture">
-        <div className="w-16 h-16 rounded-3xl bg-terracotta-500 text-white flex items-center justify-center text-3xl shadow-md animate-bounce mb-4">
-          🐾
+      <div className="min-h-screen flex flex-col items-center justify-center bg-[#F8F6F1]">
+        <div className="w-9 h-9 rounded-lg bg-[#22201D] text-[#FCFBF8] flex items-center justify-center font-mono font-bold text-xs mb-3 border border-[#22201D] animate-pulse">
+          M
         </div>
-        <h2 className="font-heading text-xl font-bold text-charcoal-800">
+        <span className="font-mono text-[11px] font-semibold tracking-wider text-[#22201D] uppercase">
           MIMO
-        </h2>
-        <p className="text-xs text-brown-500 mt-1 animate-pulse">
-          Menyiapkan rumah kucing digital...
-        </p>
+        </span>
+        <span className="font-mono text-[10px] text-[#9E9284] mt-0.5 uppercase tracking-wider">
+          INITIALIZING TELEMETRY...
+        </span>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-cream-100 text-charcoal-800 font-sans">
+    <div className="min-h-screen flex flex-col bg-[#F8F6F1] text-[#22201D] font-sans">
       <Navbar
         user={user}
         onLogout={handleLogout}

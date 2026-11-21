@@ -5,7 +5,7 @@ import { Cat, CatPersonality, CatCustomization, PetState } from '../types/pet';
 import { CatCharacter } from '../components/cat/CatCharacter';
 import { CatCustomizer } from '../components/cat/CatCustomizer';
 import { sounds } from '../audio/soundSynth';
-import { Heart, Sparkles, ArrowRight, ArrowLeft, CheckCircle2 } from 'lucide-react';
+import { ArrowRight, ArrowLeft, Check, ShieldCheck, Sparkles } from 'lucide-react';
 
 interface AdoptionPageProps {
   onAdoptionSuccess: (cat: Cat) => void;
@@ -44,13 +44,12 @@ export const AdoptionPage: React.FC<AdoptionPageProps> = ({ onAdoptionSuccess, o
         setSelectedPersonality(data[0].code);
       }
     }).catch(() => {
-      // Fallback personalities if offline
       setPersonalities([
-        { id: 1, name: 'Playful', code: 'playful', description: 'Penuh energi, selalu ingin tahu, dan suka mengejar mainan.', preferred_activity: 'play' },
-        { id: 2, name: 'Shy', code: 'shy', description: 'Pemalu dan sensitif. Butuh waktu untuk membangun Trust.', preferred_activity: 'pet' },
-        { id: 3, name: 'Lazy', code: 'lazy', description: 'Sangat santai, gemar rebahan di titik hangat matahari.', preferred_activity: 'sleep' },
-        { id: 4, name: 'Affectionate', code: 'affectionate', description: 'Manja, suka dielus, dan sering mendengkur hangat.', preferred_activity: 'pet' },
-        { id: 5, name: 'Grumpy', code: 'grumpy', description: 'Berwajah judes, gengsi tinggi, tapi setia.', preferred_activity: 'treat' },
+        { id: 1, name: 'Playful', code: 'playful', description: 'Tingkat energi tinggi, aktif mengejar mainan.', preferred_activity: 'play' },
+        { id: 2, name: 'Shy', code: 'shy', description: 'Sensitif terhadap bentakan, butuh waktu membangun trust.', preferred_activity: 'pet' },
+        { id: 3, name: 'Lazy', code: 'lazy', description: 'Tingkat kelelahan rendah, preferensi tidur siang.', preferred_activity: 'sleep' },
+        { id: 4, name: 'Affectionate', code: 'affectionate', description: 'Membutuhkan interaksi konstan dan elusan.', preferred_activity: 'pet' },
+        { id: 5, name: 'Grumpy', code: 'grumpy', description: 'Reaktif terhadap sentuhan mendadak, menyukai camilan.', preferred_activity: 'treat' },
       ]);
     });
   }, []);
@@ -59,17 +58,16 @@ export const AdoptionPage: React.FC<AdoptionPageProps> = ({ onAdoptionSuccess, o
     sounds.playClick();
     if (step === 1) {
       if (!name.trim()) {
-        setError('Berikan nama yang manis untuk kucingmu.');
+        setError('Nama kucing wajib diisi.');
         return;
       }
       setError(null);
       setStep(2);
     } else if (step === 2) {
       setStep(3);
-      // Trigger festive adoption confetti!
       confetti({
-        particleCount: 80,
-        spread: 60,
+        particleCount: 50,
+        spread: 50,
         origin: { y: 0.6 },
       });
       sounds.playPurr();
@@ -98,214 +96,203 @@ export const AdoptionPage: React.FC<AdoptionPageProps> = ({ onAdoptionSuccess, o
       });
 
       confetti({
-        particleCount: 120,
-        spread: 80,
+        particleCount: 80,
+        spread: 60,
         origin: { y: 0.5 },
       });
       sounds.playMeow();
       onAdoptionSuccess(res.cat);
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Gagal memproses adopsi kucing.');
+      setError(err instanceof Error ? err.message : 'Proses adopsi gagal.');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-8 paper-texture">
-      {/* Top Stepper Indicator */}
-      <div className="flex items-center justify-between max-w-md mx-auto mb-8">
+    <div className="max-w-5xl mx-auto px-4 py-8 bg-[#F8F6F1]">
+      
+      {/* Precision Stepper */}
+      <div className="max-w-md mx-auto mb-8 grid grid-cols-3 gap-2 font-mono text-[11px]">
         {[
-          { num: 1, label: 'Nama & Karakter' },
-          { num: 2, label: 'Penampilan' },
-          { num: 3, label: 'Sertifikat Adopsi' },
-        ].map((s, idx) => (
-          <React.Fragment key={s.num}>
-            <div className="flex flex-col items-center gap-1.5">
-              <div
-                className={`w-9 h-9 rounded-2xl flex items-center justify-center font-bold text-xs transition-all ${
-                  step === s.num
-                    ? 'bg-terracotta-500 text-white shadow-sm ring-4 ring-terracotta-100'
-                    : step > s.num
-                    ? 'bg-emerald-500 text-white'
-                    : 'bg-cream-300 text-brown-500'
-                }`}
-              >
-                {step > s.num ? <CheckCircle2 className="w-5 h-5" /> : s.num}
-              </div>
-              <span className="text-[11px] font-medium text-brown-600 hidden sm:block">
-                {s.label}
-              </span>
-            </div>
-            {idx < 2 && (
-              <div
-                className={`flex-1 h-0.5 mx-2 -mt-4 transition-all ${
-                  step > idx + 1 ? 'bg-emerald-500' : 'bg-cream-300'
-                }`}
-              />
-            )}
-          </React.Fragment>
+          { num: 1, code: '01', label: 'IDENTITY' },
+          { num: 2, code: '02', label: 'PHENOTYPE' },
+          { num: 3, code: '03', label: 'CONFIRM' },
+        ].map((s) => (
+          <div
+            key={s.num}
+            className={`p-2 rounded-lg border text-left transition-colors ${
+              step === s.num
+                ? 'border-[#C75D35] bg-[#FDF6F2] text-[#C75D35]'
+                : step > s.num
+                ? 'border-[#D5CDC2] bg-[#FCFBF8] text-[#4A7C59]'
+                : 'border-[#E7E2DA] bg-[#FAF8F5] text-[#9E9284]'
+            }`}
+          >
+            <span className="block text-[9px] opacity-75">{s.code}</span>
+            <span className="font-semibold">{s.label}</span>
+          </div>
         ))}
       </div>
 
       {error && (
-        <div className="max-w-lg mx-auto mb-6 p-3 rounded-2xl bg-rose-50 border border-rose-200 text-rose-700 text-xs text-center">
+        <div className="max-w-md mx-auto mb-6 p-3 rounded-lg bg-[#FBF2F0] border border-[#ECC4BD] text-[#A84534] font-mono text-[11px] text-left">
           {error}
         </div>
       )}
 
       {/* STEP 1: IDENTITY & PERSONALITY */}
       {step === 1 && (
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-start">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start text-left">
           
-          {/* Form left */}
-          <div className="md:col-span-7 bg-white/95 rounded-3xl border-2 border-cream-300 p-6 sm:p-8 shadow-sm space-y-6">
+          <div className="lg:col-span-7 bento-card p-6 sm:p-7 rounded-xl space-y-6">
             <div>
-              <h2 className="text-2xl font-heading font-bold text-charcoal-900">
-                Pilih Teman Hidupmu
+              <span className="font-mono text-[10px] uppercase tracking-wider text-[#C75D35] bg-[#FDF6F2] px-2 py-0.5 rounded border border-[#EBCBBD]">
+                STEP 01 // PROFIL
+              </span>
+              <h2 className="text-2xl font-bold tracking-tight text-[#141311] mt-2">
+                Identitas dan Kepribadian
               </h2>
-              <p className="text-xs text-brown-500 mt-1">
-                Setiap kucing memiliki nama dan jiwa kepribadian yang berbeda.
+              <p className="text-xs text-[#756A5E] mt-1">
+                Tentukan nama, jenis kelamin biologis, dan sifat temperamen dasar.
               </p>
             </div>
 
-            {/* Cat Name Input */}
+            {/* Name Input */}
             <div>
-              <label className="block text-xs font-semibold uppercase tracking-wider text-brown-600 mb-1.5">
-                Nama Kucing
+              <label className="block font-mono text-[10px] font-semibold uppercase tracking-wider text-[#756A5E] mb-1.5">
+                NAMA KARAKTER
               </label>
               <input
                 type="text"
                 required
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="Misal: Mimo, Luna, Ciki, Boba"
-                className="w-full px-4 py-3 rounded-2xl bg-cream-50 border border-cream-300 focus:outline-none focus:ring-2 focus:ring-terracotta-400 text-sm font-semibold text-charcoal-800"
+                placeholder="Mimo"
+                className="w-full px-3.5 py-2 rounded-lg bg-[#FAF8F5] border border-[#E7E2DA] focus:outline-none focus:border-[#C75D35] text-sm font-semibold text-[#141311]"
               />
             </div>
 
-            {/* Gender Selection */}
+            {/* Gender Selector (Zero Emojis) */}
             <div>
-              <label className="block text-xs font-semibold uppercase tracking-wider text-brown-600 mb-1.5">
-                Jenis Kelamin
+              <label className="block font-mono text-[10px] font-semibold uppercase tracking-wider text-[#756A5E] mb-1.5">
+                JENIS KELAMIN
               </label>
-              <div className="grid grid-cols-3 gap-2">
+              <div className="grid grid-cols-3 gap-2 font-mono text-xs">
                 {[
-                  { value: 'female', label: 'Betina (Female)', icon: '🌸' },
-                  { value: 'male', label: 'Jantan (Male)', icon: '🌿' },
-                  { value: 'non-binary', label: 'Netral', icon: '✨' },
-                ].map((g) => (
-                  <button
-                    key={g.value}
-                    type="button"
-                    onClick={() => {
-                      sounds.playClick();
-                      setGender(g.value);
-                    }}
-                    className={`p-2.5 rounded-2xl border text-xs font-medium flex flex-col items-center gap-1 transition-all ${
-                      gender === g.value
-                        ? 'border-terracotta-500 bg-terracotta-50 shadow-2xs text-terracotta-700 font-semibold ring-2 ring-terracotta-200'
-                        : 'border-cream-300 bg-white hover:border-cream-400 text-charcoal-700'
-                    }`}
-                  >
-                    <span>{g.icon}</span>
-                    <span>{g.label}</span>
-                  </button>
-                ))}
+                  { value: 'female', label: 'FEMALE', code: 'BETINA' },
+                  { value: 'male', label: 'MALE', code: 'JANTAN' },
+                  { value: 'non-binary', label: 'NEUTRAL', code: 'NETRAL' },
+                ].map((g) => {
+                  const isSelected = gender === g.value;
+                  return (
+                    <button
+                      key={g.value}
+                      type="button"
+                      onClick={() => {
+                        sounds.playClick();
+                        setGender(g.value);
+                      }}
+                      className={`btn-press p-2.5 rounded-lg border text-left transition-colors ${
+                        isSelected
+                          ? 'border-[#C75D35] bg-[#FDF6F2] text-[#C75D35] font-semibold'
+                          : 'border-[#E7E2DA] bg-[#FCFBF8] text-[#5A5046] hover:border-[#C8BFB3]'
+                      }`}
+                    >
+                      <span className="block font-semibold">{g.label}</span>
+                      <span className="text-[10px] text-[#9E9284]">{g.code}</span>
+                    </button>
+                  );
+                })}
               </div>
             </div>
 
             {/* Personality Selector */}
             <div>
-              <label className="block text-xs font-semibold uppercase tracking-wider text-brown-600 mb-2">
-                Pilih Kepribadian
+              <label className="block font-mono text-[10px] font-semibold uppercase tracking-wider text-[#756A5E] mb-2">
+                PILIH TEMPERAMEN // PERSONALITY MATRIX
               </label>
-              <div className="space-y-2.5">
-                {personalities.map((p) => (
-                  <div
-                    key={p.code}
-                    onClick={() => {
-                      sounds.playClick();
-                      setSelectedPersonality(p.code);
-                    }}
-                    className={`p-3.5 rounded-2xl border cursor-pointer transition-all ${
-                      selectedPersonality === p.code
-                        ? 'border-terracotta-500 bg-terracotta-50 shadow-2xs ring-2 ring-terracotta-200'
-                        : 'border-cream-300 bg-white hover:border-cream-400'
-                    }`}
-                  >
-                    <div className="flex items-center justify-between mb-1">
-                      <div className="flex items-center gap-2">
-                        <span className="font-heading font-bold text-sm text-charcoal-900">
+              <div className="space-y-2">
+                {personalities.map((p) => {
+                  const isSelected = selectedPersonality === p.code;
+                  return (
+                    <div
+                      key={p.code}
+                      onClick={() => {
+                        sounds.playClick();
+                        setSelectedPersonality(p.code);
+                      }}
+                      className={`btn-press p-3 rounded-lg border cursor-pointer transition-colors ${
+                        isSelected
+                          ? 'border-[#C75D35] bg-[#FDF6F2]'
+                          : 'border-[#E7E2DA] bg-[#FCFBF8] hover:border-[#C8BFB3]'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="font-bold text-xs text-[#141311]">
                           {p.name}
                         </span>
-                        <span className="text-[10px] uppercase font-semibold px-2 py-0.5 rounded-full bg-cream-200 text-brown-600">
-                          Aktivitas: {p.preferred_activity}
+                        <span className="font-mono text-[9px] uppercase px-1.5 py-0.2 rounded bg-[#FAF8F5] border border-[#E7E2DA] text-[#756A5E]">
+                          ACTIVITY: {p.preferred_activity}
                         </span>
                       </div>
-                      <div
-                        className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
-                          selectedPersonality === p.code
-                            ? 'border-terracotta-500 bg-terracotta-500'
-                            : 'border-cream-400'
-                        }`}
-                      >
-                        {selectedPersonality === p.code && (
-                          <div className="w-1.5 h-1.5 rounded-full bg-white" />
-                        )}
-                      </div>
+                      <p className="text-xs text-[#5A5046] leading-relaxed">
+                        {p.description}
+                      </p>
                     </div>
-                    <p className="text-xs text-brown-600 leading-relaxed">
-                      {p.description}
-                    </p>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
 
-            {/* Step 1 Actions */}
-            <div className="flex items-center justify-between pt-4 border-t border-cream-200">
+            {/* Navigation Actions */}
+            <div className="flex items-center justify-between pt-4 border-t border-[#E7E2DA]">
               {onCancel && (
                 <button
                   type="button"
                   onClick={onCancel}
-                  className="px-4 py-2.5 text-xs text-brown-500 hover:text-charcoal-800"
+                  className="font-mono text-xs text-[#756A5E] hover:text-[#22201D]"
                 >
-                  Batal
+                  BATAL
                 </button>
               )}
               <button
                 type="button"
                 onClick={handleNextStep}
-                className="tactile-btn ml-auto px-6 py-3 rounded-2xl bg-terracotta-500 hover:bg-terracotta-600 text-white font-semibold text-xs sm:text-sm flex items-center gap-2"
+                className="btn-press cta-shimmer ml-auto px-5 py-2.5 rounded-lg bg-[#22201D] hover:bg-[#322F2B] text-[#FCFBF8] font-mono text-xs font-semibold tracking-wider uppercase flex items-center gap-2 border border-[#22201D]"
               >
-                <span>Lanjut ke Penampilan</span>
-                <ArrowRight className="w-4 h-4" />
+                <span>LANJUT KE PENAMPILAN</span>
+                <ArrowRight className="w-3.5 h-3.5" />
               </button>
             </div>
           </div>
 
-          {/* Live Preview right */}
-          <div className="md:col-span-5 flex flex-col items-center">
-            <div className="w-full bg-white/90 rounded-3xl border-2 border-cream-300 p-6 shadow-sm flex flex-col items-center justify-center sticky top-24">
-              <span className="text-xs uppercase font-semibold tracking-wider text-brown-400 mb-2">
-                Pratinjau Kucing
-              </span>
-              <div className="w-full flex items-center justify-center h-64">
+          {/* Sticky Vector Preview */}
+          <div className="lg:col-span-5 sticky top-20">
+            <div className="bento-card p-5 rounded-xl space-y-3">
+              <div className="flex items-center justify-between pb-2 border-b border-[#E7E2DA]">
+                <span className="font-mono text-[10px] uppercase tracking-wider text-[#9E9284]">
+                  REAL-TIME PREVIEW
+                </span>
+                <span className="font-mono text-[10px] text-[#4A7C59]">
+                  ACTIVE
+                </span>
+              </div>
+              <div className="w-full h-60 bg-[#F4F0E8] rounded-lg border border-[#E7E2DA] flex items-center justify-center p-4">
                 <CatCharacter
                   customization={customization}
                   state="happy"
-                  size="xl"
+                  size="lg"
                   onClick={() => sounds.playMeow()}
                 />
               </div>
-              <div className="text-center mt-2">
-                <span className="font-heading font-bold text-lg text-charcoal-800">
-                  {name || 'Nama Kucing'}
+              <div className="pt-2 font-mono text-xs">
+                <span className="font-bold text-[#141311] block text-sm">
+                  {name || 'UNTITLED'}
                 </span>
-                <p className="text-xs text-brown-500 capitalize">
-                  {gender} • {selectedPersonality}
-                </p>
+                <span className="text-[10px] text-[#756A5E] uppercase">
+                  {gender} / {selectedPersonality}
+                </span>
               </div>
             </div>
           </div>
@@ -313,18 +300,20 @@ export const AdoptionPage: React.FC<AdoptionPageProps> = ({ onAdoptionSuccess, o
         </div>
       )}
 
-      {/* STEP 2: APPEARANCE CUSTOMIZATION */}
+      {/* STEP 2: PHENOTYPE CUSTOMIZATION */}
       {step === 2 && (
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-start">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start text-left">
           
-          {/* Customizer Controls left */}
-          <div className="md:col-span-7 bg-white/95 rounded-3xl border-2 border-cream-300 p-6 sm:p-8 shadow-sm">
-            <div className="mb-6">
-              <h2 className="text-2xl font-heading font-bold text-charcoal-900">
-                Atur Penampilan {name}
+          <div className="lg:col-span-7 bento-card p-6 sm:p-7 rounded-xl space-y-6">
+            <div>
+              <span className="font-mono text-[10px] uppercase tracking-wider text-[#C75D35] bg-[#FDF6F2] px-2 py-0.5 rounded border border-[#EBCBBD]">
+                STEP 02 // PENAMPILAN
+              </span>
+              <h2 className="text-2xl font-bold tracking-tight text-[#141311] mt-2">
+                Kustomisasi Visual {name}
               </h2>
-              <p className="text-xs text-brown-500 mt-1">
-                Kustomisasi warna bulu, corak belang, mata zamrud, telinga, dan perhiasan lonceng.
+              <p className="text-xs text-[#756A5E] mt-1">
+                Atur warna mantel, corak bulu, pigmentasi mata, dan ornamen kalung.
               </p>
             </div>
 
@@ -334,58 +323,57 @@ export const AdoptionPage: React.FC<AdoptionPageProps> = ({ onAdoptionSuccess, o
             />
 
             {/* Step 2 Actions */}
-            <div className="flex items-center justify-between pt-6 mt-6 border-t border-cream-200">
+            <div className="flex items-center justify-between pt-4 border-t border-[#E7E2DA]">
               <button
                 type="button"
                 onClick={() => {
                   sounds.playClick();
                   setStep(1);
                 }}
-                className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl border border-cream-300 text-xs text-brown-600 hover:bg-cream-100"
+                className="btn-press flex items-center gap-1.5 px-3.5 py-2 rounded-lg border border-[#E7E2DA] text-xs font-mono text-[#5A5046] hover:border-[#C8BFB3]"
               >
                 <ArrowLeft className="w-3.5 h-3.5" />
-                <span>Kembali</span>
+                <span>KEMBALI</span>
               </button>
 
               <button
                 type="button"
                 onClick={handleNextStep}
-                className="tactile-btn px-6 py-3 rounded-2xl bg-terracotta-500 hover:bg-terracotta-600 text-white font-semibold text-xs sm:text-sm flex items-center gap-2"
+                className="btn-press cta-shimmer px-5 py-2.5 rounded-lg bg-[#22201D] hover:bg-[#322F2B] text-[#FCFBF8] font-mono text-xs font-semibold tracking-wider uppercase flex items-center gap-2 border border-[#22201D]"
               >
-                <span>Lihat Sertifikat Adopsi</span>
-                <ArrowRight className="w-4 h-4" />
+                <span>VERIFIKASI ADOPSI</span>
+                <ArrowRight className="w-3.5 h-3.5" />
               </button>
             </div>
           </div>
 
-          {/* Sticky Live Preview right */}
-          <div className="md:col-span-5 flex flex-col items-center">
-            <div className="w-full bg-white/90 rounded-3xl border-2 border-cream-300 p-6 shadow-sm flex flex-col items-center justify-center sticky top-24">
-              <span className="text-xs uppercase font-semibold tracking-wider text-brown-400 mb-2">
-                Pratinjau Langsung
-              </span>
-
-              {/* State Preview Pill Toggles */}
-              <div className="flex flex-wrap gap-1 mb-3 justify-center">
-                {(['idle', 'happy', 'playing', 'sleeping', 'affectionate'] as PetState[]).map((st) => (
-                  <button
-                    key={st}
-                    onClick={() => {
-                      sounds.playClick();
-                      setPreviewState(st);
-                    }}
-                    className={`px-2 py-0.5 rounded-lg text-[10px] font-semibold transition-all ${
-                      previewState === st
-                        ? 'bg-terracotta-500 text-white'
-                        : 'bg-cream-200 text-brown-600 hover:bg-cream-300'
-                    }`}
-                  >
-                    {st}
-                  </button>
-                ))}
+          {/* Sticky Preview */}
+          <div className="lg:col-span-5 sticky top-20">
+            <div className="bento-card p-5 rounded-xl space-y-3">
+              <div className="flex items-center justify-between pb-2 border-b border-[#E7E2DA]">
+                <span className="font-mono text-[10px] uppercase tracking-wider text-[#9E9284]">
+                  PREVIEW STAGE
+                </span>
+                <div className="flex gap-1 font-mono text-[9px]">
+                  {(['idle', 'happy', 'playing', 'sleeping'] as PetState[]).map((st) => (
+                    <button
+                      key={st}
+                      onClick={() => {
+                        sounds.playClick();
+                        setPreviewState(st);
+                      }}
+                      className={`btn-press px-1.5 py-0.5 rounded border uppercase ${
+                        previewState === st
+                          ? 'border-[#C75D35] bg-[#FDF6F2] text-[#C75D35]'
+                          : 'border-[#E7E2DA] text-[#756A5E]'
+                      }`}
+                    >
+                      {st}
+                    </button>
+                  ))}
+                </div>
               </div>
-
-              <div className="w-full flex items-center justify-center h-64">
+              <div className="w-full h-64 bg-[#F4F0E8] rounded-lg border border-[#E7E2DA] flex items-center justify-center p-4">
                 <CatCharacter
                   customization={customization}
                   state={previewState}
@@ -393,14 +381,8 @@ export const AdoptionPage: React.FC<AdoptionPageProps> = ({ onAdoptionSuccess, o
                   onClick={() => sounds.playMeow()}
                 />
               </div>
-
-              <div className="text-center mt-2">
-                <span className="font-heading font-bold text-xl text-charcoal-900">
-                  {name}
-                </span>
-                <p className="text-xs text-brown-500">
-                  {customization.pattern} • Telinga {customization.ear_style}
-                </p>
+              <div className="font-mono text-[11px] text-[#756A5E] uppercase">
+                {customization.pattern} // {customization.ear_style} // {customization.accessory}
               </div>
             </div>
           </div>
@@ -408,85 +390,78 @@ export const AdoptionPage: React.FC<AdoptionPageProps> = ({ onAdoptionSuccess, o
         </div>
       )}
 
-      {/* STEP 3: ADOPTION CERTIFICATE & CONFIRMATION */}
+      {/* STEP 3: ADOPTION CONFIRMATION (NO EMOJIS, CLEAN ARCHITECTURAL CERTIFICATE) */}
       {step === 3 && (
-        <div className="max-w-xl mx-auto">
-          <div className="bg-white rounded-3xl border-4 border-amber-200 shadow-xl p-8 relative overflow-hidden text-center">
+        <div className="max-w-lg mx-auto text-left">
+          <div className="bento-card rounded-xl p-6 sm:p-8 border border-[#E7E2DA] space-y-6">
             
-            {/* Watermark Paw */}
-            <div className="absolute -top-10 -right-10 text-9xl text-amber-50 pointer-events-none select-none">
-              🐾
+            <div className="flex items-center justify-between pb-4 border-b border-[#E7E2DA]">
+              <div>
+                <span className="font-mono text-[10px] uppercase tracking-wider text-[#C75D35] block mb-1">
+                  OFFICIAL RECORD // REGISTRY
+                </span>
+                <h2 className="text-xl font-bold tracking-tight text-[#141311]">
+                  Sertifikat Registrasi Adopsi
+                </h2>
+              </div>
+              <ShieldCheck className="w-5 h-5 text-[#4A7C59]" />
             </div>
 
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-honey-100 text-amber-800 text-xs font-semibold uppercase tracking-wider mb-4 border border-honey-300">
-              <Sparkles className="w-3.5 h-3.5 text-amber-600" />
-              Official Adoption Certificate
-            </div>
-
-            <h2 className="text-3xl font-heading font-bold text-charcoal-900 mb-2">
-              Sertifikat Adopsi MIMO
-            </h2>
-            <p className="text-xs text-brown-500 mb-6">
-              Dengan ini kamu berjanji menyayangi, memberi makan, dan merawat:
-            </p>
-
-            <div className="w-full flex items-center justify-center my-4">
+            <div className="w-full h-52 bg-[#F4F0E8] rounded-lg border border-[#E7E2DA] flex items-center justify-center p-4">
               <CatCharacter
                 customization={customization}
                 state="affectionate"
-                size="xl"
+                size="lg"
                 onClick={() => sounds.playPurr()}
               />
             </div>
 
-            <div className="bg-cream-100/80 rounded-2xl p-4 border border-cream-300 mb-6 grid grid-cols-2 gap-3 text-left">
+            {/* Spec breakdown table */}
+            <div className="grid grid-cols-2 gap-3 p-3.5 rounded-lg border border-[#E7E2DA] bg-[#FAF8F5] font-mono text-xs">
               <div>
-                <span className="text-[10px] uppercase font-semibold text-brown-400">Nama</span>
-                <p className="font-heading font-bold text-lg text-charcoal-900">{name}</p>
+                <span className="text-[10px] text-[#9E9284] block uppercase">NAMA</span>
+                <span className="font-semibold text-[#141311]">{name}</span>
               </div>
               <div>
-                <span className="text-[10px] uppercase font-semibold text-brown-400">Kepribadian</span>
-                <p className="font-heading font-bold text-base text-terracotta-600 capitalize">
-                  {selectedPersonality}
-                </p>
+                <span className="text-[10px] text-[#9E9284] block uppercase">TEMPERAMEN</span>
+                <span className="font-semibold text-[#C75D35] uppercase">{selectedPersonality}</span>
               </div>
               <div>
-                <span className="text-[10px] uppercase font-semibold text-brown-400">Jenis Kelamin</span>
-                <p className="text-xs font-medium text-charcoal-800 capitalize">{gender}</p>
+                <span className="text-[10px] text-[#9E9284] block uppercase">GENDER</span>
+                <span className="font-semibold text-[#141311] uppercase">{gender}</span>
               </div>
               <div>
-                <span className="text-[10px] uppercase font-semibold text-brown-400">Paket Pemula</span>
-                <p className="text-xs font-medium text-emerald-700">10x Kibble + 3x Tuna + Mainan</p>
+                <span className="text-[10px] text-[#9E9284] block uppercase">STARTER INVENTORY</span>
+                <span className="font-semibold text-[#4A7C59]">10x KIBBLE + 3x TUNA</span>
               </div>
             </div>
 
-            {/* Actions */}
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 pt-2">
               <button
                 type="button"
                 onClick={() => {
                   sounds.playClick();
                   setStep(2);
                 }}
-                className="flex-1 py-3 rounded-2xl border border-cream-300 text-xs font-semibold text-brown-600 hover:bg-cream-100 transition-colors"
+                className="btn-press flex-1 py-2.5 rounded-lg border border-[#E7E2DA] font-mono text-xs font-semibold text-[#5A5046] hover:border-[#C8BFB3]"
               >
-                Ubah Lagi
+                EDIT KEMBALI
               </button>
 
               <button
                 type="button"
                 disabled={loading}
                 onClick={handleFinishAdoption}
-                className="tactile-btn flex-2 py-3.5 rounded-2xl bg-terracotta-500 hover:bg-terracotta-600 disabled:opacity-60 text-white font-semibold text-sm flex items-center justify-center gap-2 shadow-sm"
+                className="btn-press cta-shimmer flex-2 py-2.5 rounded-lg bg-[#22201D] hover:bg-[#322F2B] disabled:opacity-60 text-[#FCFBF8] font-mono text-xs font-semibold tracking-wider uppercase flex items-center justify-center gap-2 border border-[#22201D]"
               >
-                <Heart className="w-4 h-4 fill-white" />
-                <span>{loading ? 'Menyiapkan Rumah...' : 'Resmikan & Bawa Pulang'}</span>
+                <span>{loading ? 'MENYIMPAN DATA...' : 'RESMIKAN ADOPSI'}</span>
               </button>
             </div>
 
           </div>
         </div>
       )}
+
     </div>
   );
 };
